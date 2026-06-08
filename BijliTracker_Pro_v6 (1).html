@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#07111e" id="themeColorMeta"/>
+<title>BijliTracker Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sora:['Sora','sans-serif'],mono:['JetBrains Mono','monospace']},colors:{brand:{50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d'},surface:{50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',750:'#1a2535',800:'#111c2f',850:'#0d1626',900:'#07111e',950:'#040b15'}}}}}
+</script>
+<style>
+*{font-family:'Sora',sans-serif;-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+:root{--safe-bottom:env(safe-area-inset-bottom,16px);--safe-top:env(safe-area-inset-top,0px)}
+body{overscroll-behavior:none;overflow:hidden;background:#07111e}
+.tab-content{display:none}.tab-content.active{display:flex;flex-direction:column}
+.nav-item.active svg{filter:drop-shadow(0 0 8px #22c55e)}
+.glass{backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.scrollable{overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scrollable::-webkit-scrollbar{display:none}
+input[type=file]{display:none}
+.photo-thumb{width:72px;height:72px;object-fit:cover;border-radius:10px;cursor:pointer}
+.chat-bubble-ai{border-radius:4px 18px 18px 18px}
+.chat-bubble-user{border-radius:18px 4px 18px 18px}
+.typing span{animation:blink 1.2s infinite both}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.15}40%{opacity:1}}
+.btn-press{transition:transform .12s ease,opacity .12s ease}
+.btn-press:active{transform:scale(.95);opacity:.85}
+.slide-up{animation:slideUp .3s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-bg{background:rgba(0,0,0,.75);backdrop-filter:blur(6px)}
+select{-webkit-appearance:none;appearance:none}
+/* ===== Modal animations ===== */
+@keyframes sheetIn{from{transform:translateY(42px) scale(.97);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@keyframes sheetOut{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(30px) scale(.97);opacity:0}}
+@keyframes popIn{from{transform:scale(.87) translateY(18px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes popOut{from{transform:scale(1) translateY(0);opacity:1}to{transform:scale(.87) translateY(18px);opacity:0}}
+@keyframes bgFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes bgFadeOut{from{opacity:1}to{opacity:0}}
+@keyframes toastIn{from{transform:translateX(-50%) translateY(-12px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+.modal-sheet-enter>div{animation:sheetIn .34s cubic-bezier(.22,1,.36,1) forwards}
+.modal-sheet-exit>div{animation:sheetOut .22s ease-in forwards}
+.modal-pop-enter>div{animation:popIn .32s cubic-bezier(.22,1,.36,1) forwards}
+.modal-pop-exit>div{animation:popOut .2s ease-in forwards}
+.modal-bg-enter{animation:bgFadeIn .25s ease forwards}
+.modal-bg-exit{animation:bgFadeOut .22s ease forwards}
+/* ===== Card border gradient trick ===== */
+.card-glow{box-shadow:0 1px 0 0 rgba(255,255,255,.06) inset,0 0 0 1px rgba(255,255,255,.05)}
+/* ===== Trend bar ===== */
+.trend-bar{border-radius:4px 4px 0 0;transition:height .6s cubic-bezier(.22,1,.36,1)}
+/* ===== Light mode ===== */
+html:not(.dark) body{background-color:#f0f4f8!important;color:#0f172a!important}
+html:not(.dark) #topBar{background:rgba(248,250,252,.96)!important;border-color:#e2e8f0!important;box-shadow:0 1px 0 #e2e8f0}
+html:not(.dark) nav{background:rgba(248,250,252,.97)!important;border-color:#e2e8f0!important;box-shadow:0 -1px 0 #e2e8f0}
+html:not(.dark) .bg-surface-800{background:#ffffff!important;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+html:not(.dark) .bg-surface-850{background:#f8fafc!important}
+html:not(.dark) .bg-surface-900{background:#f0f4f8!important}
+html:not(.dark) .bg-surface-950{background:#e8eef6!important}
+html:not(.dark) .bg-surface-900\/50{background:rgba(240,244,248,.8)!important}
+html:not(.dark) .bg-surface-900\/80{background:rgba(248,250,252,.95)!important}
+html:not(.dark) .bg-surface-900\/90{background:rgba(248,250,252,.97)!important}
+html:not(.dark) .border-white\/5,html:not(.dark) .border-white\/8,
+html:not(.dark) .border-white\/10,html:not(.dark) .border-white\/20{border-color:#e2e8f0!important}
+html:not(.dark) .text-white{color:#0f172a!important}
+html:not(.dark) .text-white\/30{color:rgba(15,23,42,.3)!important}
+html:not(.dark) .text-white\/40{color:rgba(15,23,42,.45)!important}
+html:not(.dark) .text-white\/50{color:rgba(15,23,42,.55)!important}
+html:not(.dark) .text-white\/60{color:rgba(15,23,42,.65)!important}
+html:not(.dark) .text-white\/70{color:rgba(15,23,42,.8)!important}
+html:not(.dark) .bg-white\/5{background:rgba(0,0,0,.03)!important}
+html:not(.dark) .bg-white\/10{background:rgba(0,0,0,.05)!important}
+html:not(.dark) .bg-white\/20{background:rgba(0,0,0,.07)!important}
+html:not(.dark) input:not([type=range]),html:not(.dark) select,html:not(.dark) textarea{color:#0f172a!important;background:#f8fafc!important}
+html:not(.dark) [class*="bg-brand-5"] *,html:not(.dark) [class*="bg-brand-6"] *,
+html:not(.dark) [class*="bg-brand-7"] *,html:not(.dark) [class*="bg-purple-6"] *,
+html:not(.dark) [class*="bg-purple-7"] *,html:not(.dark) [class*="bg-red-5"] *,
+html:not(.dark) [class*="bg-amber-5"] *,html:not(.dark) .hero-gradient *{color:#fff!important}
+html:not(.dark) .card-glow{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+html:not(.dark) #confirmModal .bg-surface-800,html:not(.dark) #renterModal .bg-surface-800,
+html:not(.dark) #importModal .bg-surface-800{background:#fff!important}
+html:not(.dark) #renterDetailModal .bg-surface-900,html:not(.dark) #tutorialModal .bg-surface-900,
+html:not(.dark) #msgModal .bg-surface-900{background:#f8fafc!important}
+html:not(.dark) #renterDetailModal .bg-surface-800,html:not(.dark) #tutorialModal .bg-surface-800,
+html:not(.dark) #msgModal .bg-surface-800{background:#fff!important}
+html:not(.dark) .nav-item.active{color:#15803d!important}
+html:not(.dark) .nav-item.active svg{filter:drop-shadow(0 0 6px #16a34a)}
+</style>
+</head>
+<body class="bg-surface-900 text-white" id="app">
+
+<!-- ===== TOP BAR ===== -->
+<div id="topBar" class="glass fixed top-0 left-0 right-0 z-40 bg-surface-900/85 border-b border-white/5 px-4 flex items-center justify-between" style="padding-top:max(env(safe-area-inset-top,0px),12px);height:calc(56px + env(safe-area-inset-top,0px))">
+  <div class="flex items-center gap-2.5">
+    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/30">
+      <svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <div>
+      <span class="font-bold text-base tracking-tight leading-none">BijliTracker</span>
+      <span class="text-brand-400 font-semibold text-xs ml-1.5 bg-brand-500/10 px-1.5 py-0.5 rounded-md">Pro</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <div id="syncDot" class="w-2 h-2 rounded-full bg-brand-400 opacity-0 transition-opacity" title="Saved"></div>
+    <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center btn-press border border-white/5" id="themeBtn" aria-label="Toggle theme">
+      <svg id="sunIcon" class="hidden" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg id="moonIcon" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ===== MAIN CONTENT AREA ===== -->
+<div id="mainArea" class="fixed left-0 right-0 scrollable" style="top:calc(56px + env(safe-area-inset-top,0px));bottom:calc(64px + var(--safe-bottom))">
+
+  <!-- =========== DASHBOARD TAB =========== -->
+  <div id="tab-dashboard" class="tab-content active flex-col gap-0 px-4 pt-4 pb-8">
+
+    <!-- Hero Stats Card -->
+    <div class="hero-gradient rounded-2xl bg-gradient-to-br from-brand-700 via-brand-600 to-teal-700 p-5 mb-3 relative overflow-hidden slide-up shadow-xl shadow-brand-900/40">
+      <div class="absolute top-0 right-0 w-44 h-44 rounded-full bg-white/5 -translate-y-12 translate-x-12 pointer-events-none"></div>
+      <div class="absolute bottom-0 left-0 w-32 h-32 rounded-full bg-black/10 translate-y-10 -translate-x-10 pointer-events-none"></div>
+      <div class="absolute top-5 right-5 w-16 h-16 rounded-full bg-white/4 pointer-events-none"></div>
+      <p class="text-brand-200 text-xs font-semibold uppercase tracking-widest mb-1">Latest Bill</p>
+      <p class="text-4xl font-bold mb-4 font-mono tracking-tight" id="heroAmount">₹0.00</p>
+      <div class="flex gap-4 flex-wrap">
+        <div><p class="text-brand-300 text-xs font-medium">Units</p><p class="font-bold text-lg font-mono" id="heroUnits">—</p></div>
+        <div class="w-px bg-white/20 self-stretch"></div>
+        <div><p class="text-brand-300 text-xs font-medium">Rate</p><p class="font-bold text-lg font-mono" id="heroRate">—</p></div>
+        <div class="w-px bg-white/20 self-stretch"></div>
+        <div><p class="text-brand-300 text-xs font-medium">Total Bills</p><p class="font-bold text-lg font-mono" id="heroBillCount">0</p></div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="grid grid-cols-2 gap-2.5 mb-3 slide-up" style="animation-delay:.04s">
+      <div class="rounded-2xl bg-surface-800 border border-white/8 p-3.5 card-glow">
+        <p class="text-xs text-white/40 font-medium mb-1">Pending Dues</p>
+        <p class="text-xl font-bold font-mono text-amber-400" id="statPending">₹0</p>
+        <p class="text-xs text-white/30 mt-0.5" id="statPendingCount">0 unpaid bills</p>
+      </div>
+      <div class="rounded-2xl bg-surface-800 border border-white/8 p-3.5 card-glow">
+        <p class="text-xs text-white/40 font-medium mb-1">This Month</p>
+        <p class="text-xl font-bold font-mono text-brand-400" id="statThisMonth">₹0</p>
+        <p class="text-xs text-white/30 mt-0.5" id="statThisMonthLabel">collected</p>
+      </div>
+      <div class="rounded-2xl bg-surface-800 border border-white/8 p-3.5 card-glow">
+        <p class="text-xs text-white/40 font-medium mb-1">Active Renters</p>
+        <p class="text-xl font-bold font-mono text-blue-400" id="statActiveRenters">0</p>
+        <p class="text-xs text-white/30 mt-0.5">currently renting</p>
+      </div>
+      <div class="rounded-2xl bg-surface-800 border border-white/8 p-3.5 card-glow">
+        <p class="text-xs text-white/40 font-medium mb-1">Avg Bill</p>
+        <p class="text-xl font-bold font-mono text-purple-400" id="statAvgBill">₹0</p>
+        <p class="text-xs text-white/30 mt-0.5">per bill</p>
+      </div>
+    </div>
+
+    <!-- Monthly Trend Chart -->
+    <div class="rounded-2xl bg-surface-800 border border-white/8 p-4 mb-3 card-glow slide-up" style="animation-delay:.06s" id="trendSection">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-xs font-semibold text-white/60 uppercase tracking-wider">6-Month Trend</p>
+        <p class="text-xs text-white/30 font-mono" id="trendTotal"></p>
+      </div>
+      <div id="trendChart" class="flex items-end gap-1.5 h-16"></div>
+    </div>
+
+    <!-- Add New Bill Form -->
+    <div class="rounded-2xl bg-surface-800 border border-white/8 p-5 mb-3 card-glow slide-up" style="animation-delay:.08s">
+      <h2 class="font-bold text-base mb-4 flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-brand-500/15 flex items-center justify-center">
+          <svg width="14" height="14" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        Add New Bill
+      </h2>
+
+      <!-- Renter select -->
+      <div class="mb-3">
+        <label class="text-xs text-white/50 mb-1.5 block font-medium">Renter</label>
+        <div class="relative">
+          <select id="billRenter" onchange="onBillRenterChange()" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors pr-8 font-medium">
+            <option value="">— Select Renter —</option>
+          </select>
+          <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/30" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <!-- Readings -->
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="text-xs text-white/50 mb-1.5 block font-medium">Previous Reading</label>
+          <input id="prevReading" type="number" inputmode="decimal" placeholder="e.g. 1200" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors font-mono"/>
+        </div>
+        <div>
+          <label class="text-xs text-white/50 mb-1.5 block font-medium">Current Reading</label>
+          <input id="currReading" type="number" inputmode="decimal" placeholder="e.g. 1350" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors font-mono"/>
+        </div>
+      </div>
+
+      <!-- Date and Auto-units -->
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="text-xs text-white/50 mb-1.5 block font-medium">Billing Date</label>
+          <input id="billDate" type="date" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors"/>
+        </div>
+        <div>
+          <label class="text-xs text-white/50 mb-1.5 block font-medium">Units (auto)</label>
+          <div class="w-full bg-surface-900/50 rounded-xl px-3 py-2.5 text-sm border border-white/5 text-brand-400 font-mono font-semibold flex items-center gap-1.5">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="flex-shrink-0 opacity-60"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <span id="unitsCalc">0</span> <span class="text-white/30 text-xs">kWh</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Calc -->
+      <div class="rounded-xl bg-brand-500/8 border border-brand-500/20 px-4 py-3 mb-3">
+        <div class="flex justify-between items-center">
+          <span class="text-sm text-white/60">Electricity Cost</span>
+          <span class="font-bold text-brand-400 text-base font-mono" id="liveCalc">₹0.00</span>
+        </div>
+        <div id="livePumpRow" class="hidden justify-between items-center mt-1">
+          <span class="text-xs text-white/40">+ Water Pump</span>
+          <span class="text-xs text-blue-400 font-mono" id="livePump">₹0.00</span>
+        </div>
+        <div id="liveTotalRow" class="hidden border-t border-brand-500/15 mt-2 pt-2 justify-between items-center">
+          <span class="text-sm text-white/70 font-semibold">Total Bill</span>
+          <span class="font-bold text-brand-300 text-lg font-mono" id="liveTotal">₹0.00</span>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="mb-3">
+        <label class="text-xs text-white/50 mb-1.5 block font-medium">Notes (optional)</label>
+        <input id="billNotes" type="text" placeholder="e.g. AC usage high this month" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors"/>
+      </div>
+
+      <!-- Water Pump Bill -->
+      <div class="mb-3">
+        <label class="text-xs text-white/50 mb-1.5 block font-medium flex items-center gap-1.5">
+          <svg width="12" height="12" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>
+          Water Pump Bill (optional — submeter)
+        </label>
+        <div class="flex items-center bg-surface-900 rounded-xl border border-white/10 focus-within:border-brand-500 transition-colors overflow-hidden">
+          <span class="pl-3 text-white/40 text-sm font-mono">₹</span>
+          <input id="pumpBill" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00" class="flex-1 bg-transparent px-2 py-2.5 text-sm outline-none font-mono" oninput="updateLiveCalc()"/>
+        </div>
+        <p class="text-xs text-white/25 mt-1">Added to total — not counted in unit calculation</p>
+      </div>
+
+      <!-- Photo Capture -->
+      <div class="mb-4">
+        <input type="file" id="billPhotoCamera" accept="image/*" capture="environment" onchange="previewPhoto(event)"/>
+        <input type="file" id="billPhotoGallery" accept="image/*" onchange="previewPhoto(event)"/>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="openCamera()" class="rounded-xl border border-dashed border-white/15 py-3 text-sm text-white/50 flex items-center justify-center gap-2 hover:border-brand-500/50 hover:text-brand-400 transition-colors btn-press">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Camera
+          </button>
+          <button onclick="document.getElementById('billPhotoGallery').value='';document.getElementById('billPhotoGallery').click()" class="rounded-xl border border-dashed border-white/15 py-3 text-sm text-white/50 flex items-center justify-center gap-2 hover:border-brand-500/50 hover:text-brand-400 transition-colors btn-press">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Gallery
+          </button>
+        </div>
+        <p id="photoLabel" class="text-xs text-white/30 text-center mt-2">No photo attached</p>
+        <div id="photoPreviewBox" class="hidden mt-2 relative inline-block">
+          <img id="photoPreviewImg" class="photo-thumb" alt="preview"/>
+          <button onclick="clearPhoto()" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center leading-none shadow-md">✕</button>
+        </div>
+      </div>
+
+      <button onclick="saveBill()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl py-3.5 text-sm transition-colors btn-press flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20">
+        <svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Bill
+      </button>
+    </div>
+
+    <!-- Recent Bills -->
+    <div class="rounded-2xl bg-surface-800 border border-white/8 p-4 card-glow slide-up" style="animation-delay:.1s">
+      <div class="flex items-center justify-between mb-3">
+        <button onclick="toggleRecentBills()" class="flex items-center gap-2 text-left">
+          <h2 class="font-semibold text-sm text-white/70">Recent Bills</h2>
+          <svg id="recentBillsChevron" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-white/30 transition-transform duration-200"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <button onclick="switchTab('history')" class="text-brand-400 text-xs font-semibold btn-press">View All →</button>
+      </div>
+      <div id="recentBillsCollapsible" class="hidden flex-col gap-2">
+        <div id="recentBillsList">
+          <div class="text-center text-white/30 text-sm py-5">No bills yet. Add your first bill above!</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- end dashboard -->
+
+  <!-- =========== HISTORY TAB =========== -->
+  <div id="tab-history" class="tab-content flex-col gap-3 px-4 pt-4 pb-8">
+    <div class="flex items-center justify-between mb-0">
+      <h2 class="font-bold text-lg">Bill History</h2>
+      <span id="historyCount" class="text-xs text-white/40 bg-white/5 px-2.5 py-1 rounded-lg font-medium">0 bills</span>
+    </div>
+    <div class="relative">
+      <select id="filterRenter" onchange="renderHistory()" class="w-full bg-surface-800 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors pr-8 font-medium card-glow">
+        <option value="">All Renters</option>
+      </select>
+      <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/30" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="relative">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchBills" type="text" placeholder="Search date, renter, notes, amount…" oninput="renderHistory()" class="w-full bg-surface-800 rounded-xl pl-9 pr-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors card-glow"/>
+    </div>
+    <!-- Sort controls -->
+    <div class="flex gap-2">
+      <select id="historySortBy" onchange="renderHistory()" class="flex-1 bg-surface-800 rounded-xl px-3 py-2 text-xs border border-white/10 outline-none transition-colors font-medium">
+        <option value="date_desc">Newest First</option>
+        <option value="date_asc">Oldest First</option>
+        <option value="amount_desc">Highest Amount</option>
+        <option value="amount_asc">Lowest Amount</option>
+      </select>
+      <select id="historyPayFilter" onchange="renderHistory()" class="flex-1 bg-surface-800 rounded-xl px-3 py-2 text-xs border border-white/10 outline-none transition-colors font-medium">
+        <option value="all">All Status</option>
+        <option value="unpaid">Unpaid Only</option>
+        <option value="paid">Paid Only</option>
+      </select>
+    </div>
+    <div id="historyList" class="flex flex-col gap-3">
+      <div class="text-center text-white/30 text-sm py-10">Your bill history will appear here.</div>
+    </div>
+  </div>
+
+  <!-- =========== RENTERS TAB =========== -->
+  <div id="tab-renters" class="tab-content flex-col gap-3 px-4 pt-4 pb-8">
+    <div class="flex items-center justify-between mb-0">
+      <h2 class="font-bold text-lg">Renters</h2>
+      <button onclick="openRenterModal()" class="flex items-center gap-1.5 bg-brand-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl btn-press hover:bg-brand-600 transition-colors shadow-md shadow-brand-500/20">
+        <svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Renter
+      </button>
+    </div>
+    <!-- Renter Search -->
+    <div class="relative">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchRenters" type="text" placeholder="Search renters…" oninput="renderRenters()" class="w-full bg-surface-800 rounded-xl pl-9 pr-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors card-glow"/>
+    </div>
+    <div>
+      <p class="text-xs font-bold text-brand-400 uppercase tracking-widest mb-2.5">Current Renters</p>
+      <div id="currentRentersList">
+        <div class="text-center text-white/30 text-sm py-8 rounded-2xl bg-surface-800 border border-white/8">No active renters. Tap Add Renter to get started.</div>
+      </div>
+    </div>
+    <div id="pastRentersSection" class="hidden">
+      <p class="text-xs font-bold text-white/25 uppercase tracking-widest mb-2.5 mt-1">Past Renters</p>
+      <div id="pastRentersList" class="flex flex-col gap-3"></div>
+    </div>
+  </div>
+
+  <!-- =========== AI CHAT TAB =========== -->
+  <div id="tab-chat" class="tab-content flex-col" style="height:100%">
+    <div class="px-4 pt-4 pb-2 flex-shrink-0">
+      <div class="flex items-center gap-3 mb-2 rounded-2xl bg-surface-800 border border-white/8 p-3 card-glow">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center font-bold text-sm text-white flex-shrink-0 shadow-lg shadow-purple-900/40">AI</div>
+        <div class="flex-1">
+          <p class="font-bold text-sm">Bill Assistant</p>
+          <p class="text-xs text-white/40">Groq LLaMA 3.3 · Fast &amp; Free</p>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div id="aiStatusDot" class="w-2 h-2 rounded-full bg-white/20"></div>
+          <span id="aiStatusLabel" class="text-xs text-white/30">—</span>
+        </div>
+      </div>
+    </div>
+    <div id="chatMessages" class="scrollable flex-1 px-4 py-2 flex flex-col gap-3" style="min-height:0">
+      <div class="chat-bubble-ai bg-surface-800 border border-white/8 rounded-2xl px-4 py-3 max-w-xs self-start">
+        <p class="text-sm leading-relaxed font-medium">Hello! I'm your BijliTracker AI — I have full access to all your bill and renter data.</p>
+        <p class="text-xs text-white/50 mt-2 mb-1 font-semibold">Try asking me:</p>
+        <div class="space-y-1">
+          <button onclick="quickChat('Who has the highest pending dues?')" class="block w-full text-left text-xs text-brand-400 bg-brand-500/8 hover:bg-brand-500/15 px-2.5 py-1.5 rounded-lg transition-colors btn-press">"Who has the highest pending dues?"</button>
+          <button onclick="quickChat('Give me a complete payment status report')" class="block w-full text-left text-xs text-brand-400 bg-brand-500/8 hover:bg-brand-500/15 px-2.5 py-1.5 rounded-lg transition-colors btn-press">"Give me a complete payment status report"</button>
+          <button onclick="quickChat('What was the average monthly consumption?')" class="block w-full text-left text-xs text-brand-400 bg-brand-500/8 hover:bg-brand-500/15 px-2.5 py-1.5 rounded-lg transition-colors btn-press">"Average monthly consumption?"</button>
+        </div>
+      </div>
+    </div>
+    <div id="apiKeyWarning" class="mx-4 mb-2 rounded-xl bg-amber-500/10 border border-amber-500/25 px-3 py-2.5 text-xs text-amber-300 flex items-center gap-2">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>Groq API key not set. <button onclick="switchTab('settings')" class="underline font-semibold">Go to Settings →</button></span>
+    </div>
+    <div class="px-4 pb-3 pt-2 border-t border-white/5 flex-shrink-0">
+      <div class="flex gap-2">
+        <input id="chatInput" type="text" placeholder="Ask about your bills and renters…" class="flex-1 bg-surface-800 rounded-xl px-4 py-2.5 text-sm border border-white/10 focus:border-purple-500 outline-none transition-colors card-glow" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"/>
+        <button onclick="sendChat()" class="w-11 h-11 bg-purple-600 hover:bg-purple-700 rounded-xl flex items-center justify-center btn-press flex-shrink-0 shadow-md shadow-purple-900/30 transition-colors">
+          <svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========== SETTINGS TAB =========== -->
+  <div id="tab-settings" class="tab-content flex-col gap-4 px-4 pt-4 pb-8">
+    <h2 class="font-bold text-lg">Settings</h2>
+
+    <!-- Price Per Unit -->
+    <div class="rounded-2xl bg-surface-800 border border-white/8 p-5 card-glow">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-brand-500/15 flex items-center justify-center flex-shrink-0">
+          <svg width="20" height="20" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <div><p class="font-bold text-sm">Price Per Unit</p><p class="text-xs text-white/40">Your electricity tariff rate</p></div>
+      </div>
+      <div class="flex gap-3 items-end">
+        <div class="flex-1">
+          <label class="text-xs text-white/50 mb-1.5 block font-medium">Rate (₹ per kWh)</label>
+          <div class="flex items-center bg-surface-900 rounded-xl border border-white/10 focus-within:border-brand-500 transition-colors overflow-hidden">
+            <span class="pl-3 text-white/40 text-sm font-mono">₹</span>
+            <input id="pricePerUnit" type="number" inputmode="decimal" step="0.01" placeholder="6.50" class="flex-1 bg-transparent px-2 py-2.5 text-sm outline-none font-mono font-semibold"/>
+          </div>
+        </div>
+        <button onclick="savePricePerUnit()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl px-5 py-2.5 text-sm btn-press transition-colors">Save</button>
+      </div>
+      <p class="text-xs text-white/30 mt-2">Current: <span id="currentRate" class="text-brand-400 font-mono font-semibold">Not set</span></p>
+    </div>
+
+    <!-- Groq API Key -->
+    <div class="rounded-2xl bg-surface-800 border border-white/8 p-5 card-glow">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center flex-shrink-0">
+          <svg width="20" height="20" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <div><p class="font-bold text-sm">Groq API Key</p><p class="text-xs text-white/40">Free · Powers the AI assistant</p></div>
+      </div>
+      <div class="relative mb-3">
+        <input id="groqApiKey" type="password" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-purple-500 outline-none transition-colors font-mono pr-10"/>
+        <button onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors btn-press">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button onclick="saveGroqKey()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl py-2.5 text-sm btn-press transition-colors">Save API Key</button>
+      <p class="text-xs text-white/30 mt-2">Free key at <span class="text-purple-400 font-semibold">console.groq.com</span> — no credit card needed</p>
+    </div>
+
+    <!-- Message Language -->
+    <div class="rounded-2xl bg-surface-800 border border-white/8 p-5 card-glow">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+          <svg width="20" height="20" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div><p class="font-bold text-sm">Bill Message Language</p><p class="text-xs text-white/40">Language for renter bill messages</p></div>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="setMsgLang('both')" id="langBoth" class="rounded-xl py-2.5 text-xs font-bold btn-press transition-all bg-brand-500 text-white border border-brand-500">Both</button>
+        <button onclick="setMsgLang('en')" id="langEn" class="rounded-xl py-2.5 text-xs font-bold btn-press transition-all bg-white/5 text-white/60 border border-white/10">English</button>
+        <button onclick="setMsgLang('gu')" id="langGu" class="rounded-xl py-2.5 text-xs font-bold btn-press transition-all bg-white/5 text-white/60 border border-white/10">ગુજરાતી</button>
+      </div>
+      <p class="text-xs text-white/30 mt-2.5">Selected: <span id="currentLang" class="text-brand-400 font-semibold">Both languages</span></p>
+    </div>
+
+    <!-- App Info -->
+    <div class="rounded-2xl bg-surface-800 border border-white/8 p-5 card-glow">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+          <svg width="20" height="20" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div><p class="font-bold text-sm">App Info</p><p class="text-xs text-white/40">BijliTracker Pro v6.0</p></div>
+      </div>
+      <div class="space-y-2.5 text-sm text-white/50">
+        <div class="flex justify-between"><span>Total Bills</span><span id="totalBillsInfo" class="text-white font-semibold">0</span></div>
+        <div class="flex justify-between"><span>Total Renters</span><span id="totalRentersInfo" class="text-white font-semibold">0</span></div>
+        <div class="flex justify-between"><span>Storage</span><span class="text-brand-400 font-semibold">IndexedDB (Local)</span></div>
+        <div class="flex justify-between"><span>Data Privacy</span><span class="text-brand-400 font-semibold">On-device only</span></div>
+      </div>
+    </div>
+
+    <!-- Tutorial -->
+    <button onclick="openTutorial()" class="w-full rounded-2xl bg-surface-800 border border-white/8 p-4 flex items-center gap-3 text-left btn-press hover:border-white/20 transition-colors card-glow">
+      <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center flex-shrink-0">
+        <svg width="20" height="20" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div><p class="font-semibold text-sm">App Tutorial</p><p class="text-xs text-white/40">How to use BijliTracker Pro</p></div>
+      <svg class="ml-auto text-white/20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+    <!-- Export -->
+    <button onclick="exportData()" class="w-full rounded-2xl bg-surface-800 border border-white/8 p-4 flex items-center gap-3 text-left btn-press hover:border-white/20 transition-colors card-glow">
+      <div class="w-10 h-10 rounded-xl bg-teal-500/15 flex items-center justify-center flex-shrink-0">
+        <svg width="20" height="20" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </div>
+      <div><p class="font-semibold text-sm">Export All Data</p><p class="text-xs text-white/40">Download as JSON backup</p></div>
+      <svg class="ml-auto text-white/20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+    <!-- Import -->
+    <button onclick="openImportModal()" class="w-full rounded-2xl bg-surface-800 border border-white/8 p-4 flex items-center gap-3 text-left btn-press hover:border-white/20 transition-colors card-glow">
+      <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+        <svg width="20" height="20" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div><p class="font-semibold text-sm">Import Data</p><p class="text-xs text-white/40">Restore from JSON backup</p></div>
+      <svg class="ml-auto text-white/20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+
+    <!-- Clear All -->
+    <button onclick="confirmClearAll()" class="w-full rounded-2xl bg-red-500/5 border border-red-500/20 p-4 flex items-center gap-3 text-left btn-press hover:bg-red-500/10 transition-colors">
+      <div class="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center flex-shrink-0">
+        <svg width="20" height="20" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      </div>
+      <div><p class="font-semibold text-sm text-red-400">Clear All Data</p><p class="text-xs text-red-300/40">This cannot be undone</p></div>
+    </button>
+  </div>
+
+</div><!-- end mainArea -->
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="glass fixed bottom-0 left-0 right-0 z-40 bg-surface-900/92 border-t border-white/5 flex" style="padding-bottom:var(--safe-bottom);height:calc(64px + var(--safe-bottom))">
+  <button onclick="switchTab('dashboard')" class="nav-item active flex-1 flex flex-col items-center justify-center gap-0.5 pt-2 text-brand-400" data-tab="dashboard">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="text-xs font-semibold">Home</span>
+  </button>
+  <button onclick="switchTab('history')" class="nav-item flex-1 flex flex-col items-center justify-center gap-0.5 pt-2 text-white/40" data-tab="history">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span class="text-xs font-semibold">History</span>
+  </button>
+  <button onclick="switchTab('renters')" class="nav-item flex-1 flex flex-col items-center justify-center gap-0.5 pt-2 text-white/40" data-tab="renters">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    <span class="text-xs font-semibold">Renters</span>
+  </button>
+  <button onclick="switchTab('chat')" class="nav-item flex-1 flex flex-col items-center justify-center gap-0.5 pt-2 text-white/40" data-tab="chat">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <span class="text-xs font-semibold">AI</span>
+  </button>
+  <button onclick="switchTab('settings')" class="nav-item flex-1 flex flex-col items-center justify-center gap-0.5 pt-2 text-white/40" data-tab="settings">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    <span class="text-xs font-semibold">Settings</span>
+  </button>
+</nav>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- Photo Viewer -->
+<div id="photoModal" class="fixed inset-0 z-[70] modal-bg hidden flex items-center justify-center p-4" onclick="closePhotoModal()">
+  <div class="relative max-w-full max-h-full">
+    <img id="modalPhoto" src="" class="max-w-full max-h-screen rounded-2xl shadow-2xl" alt="Bill photo"/>
+    <button onclick="closePhotoModal()" class="absolute top-3 right-3 w-9 h-9 bg-black/70 rounded-full flex items-center justify-center text-white text-lg btn-press">✕</button>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="confirmModal" class="fixed inset-0 z-[70] modal-bg hidden flex items-center justify-center p-6">
+  <div class="bg-surface-800 rounded-2xl border border-white/10 p-6 w-full max-w-sm shadow-2xl">
+    <h3 class="font-bold text-lg mb-2" id="confirmTitle">Confirm</h3>
+    <div class="text-white/60 text-sm mb-6 leading-relaxed" id="confirmMsg">Are you sure?</div>
+    <div class="flex gap-3">
+      <button onclick="closeConfirmModal()" class="flex-1 rounded-xl bg-white/5 py-2.5 text-sm font-semibold btn-press border border-white/10">Cancel</button>
+      <button id="confirmOkBtn" class="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-semibold btn-press text-white">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Camera Blocked Modal -->
+<div id="cameraBlockedModal" class="fixed inset-0 z-[90] modal-bg hidden flex items-center justify-center p-6">
+  <div class="bg-surface-800 rounded-2xl border border-white/10 p-6 w-full max-w-sm shadow-2xl">
+    <div class="flex flex-col items-center text-center mb-4">
+      <div class="w-14 h-14 rounded-2xl bg-red-500/15 flex items-center justify-center mb-3">
+        <svg width="28" height="28" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+      </div>
+      <h3 class="font-bold text-lg mb-1">Camera Access Blocked</h3>
+      <p class="text-white/50 text-sm leading-relaxed">Camera permission was denied. Enable it in your browser settings.</p>
+    </div>
+    <div class="bg-white/5 rounded-xl p-3 mb-4 text-xs text-white/60 space-y-1.5">
+      <p class="font-bold text-white/80 mb-1">How to enable in Chrome:</p>
+      <p>1. Tap the 🔒 lock icon in the address bar</p>
+      <p>2. Find <strong>Camera</strong> → set to <strong>Allow</strong></p>
+      <p>3. Refresh the page and try again</p>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeCameraBlockedModal()" class="flex-1 rounded-xl bg-white/5 py-2.5 text-sm font-semibold btn-press border border-white/10">Cancel</button>
+      <button onclick="retryCameraPermission()" class="flex-1 rounded-xl bg-brand-500 py-2.5 text-sm font-semibold btn-press text-white">Try Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit Renter Modal -->
+<div id="renterModal" class="fixed inset-0 z-[70] modal-bg hidden flex items-end justify-center">
+  <div class="bg-surface-800 rounded-t-3xl border-t border-white/10 w-full max-w-lg flex flex-col shadow-2xl" style="max-height:92vh">
+    <div class="flex-shrink-0 flex justify-center pt-3 pb-1"><div class="w-10 h-1 rounded-full bg-white/20"></div></div>
+    <div class="overflow-y-auto scrollable flex-1 px-6 pb-10 pt-2">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-bold text-lg" id="renterModalTitle">Add Renter</h3>
+        <button onclick="closeRenterModal()" class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-white/60 btn-press">✕</button>
+      </div>
+      <div class="space-y-3.5">
+        <div>
+          <label class="text-xs text-white/50 mb-1.5 block font-medium">Full Name *</label>
+          <input id="renterName" type="text" placeholder="e.g. Ahmed Ali" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors font-medium"/>
+        </div>
+        <div>
+          <label class="text-xs text-white/50 mb-1.5 block font-medium">Mobile Number *</label>
+          <input id="renterMobile" type="tel" placeholder="e.g. 9876543210" maxlength="15" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors font-mono"/>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-white/50 mb-1.5 block font-medium">Move-In Date *</label>
+            <input id="renterMoveIn" type="date" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors"/>
+          </div>
+          <div>
+            <label class="text-xs text-white/50 mb-1.5 block font-medium">Move-Out Date</label>
+            <input id="renterMoveOut" type="date" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors"/>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-white/50 mb-1.5 block font-medium">Room / Unit</label>
+          <input id="renterRoom" type="text" placeholder="e.g. Room 1, First Floor" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors"/>
+        </div>
+        <div>
+          <label class="text-xs text-white/50 mb-1.5 block font-medium">Notes</label>
+          <input id="renterNotes" type="text" placeholder="e.g. Security deposit ₹5000 received" class="w-full bg-surface-900 rounded-xl px-3 py-2.5 text-sm border border-white/10 focus:border-brand-500 outline-none transition-colors"/>
+        </div>
+      </div>
+      <input type="hidden" id="renterEditId"/>
+      <button onclick="saveRenter()" class="mt-5 w-full bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl py-3.5 text-sm btn-press transition-colors shadow-lg shadow-brand-500/20">
+        Save Renter
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Renter Detail Modal -->
+<div id="renterDetailModal" class="fixed inset-0 z-50 modal-bg hidden flex flex-col">
+  <div class="flex-1 overflow-hidden flex flex-col bg-surface-900 rounded-t-3xl mt-10 border-t border-white/10 shadow-2xl">
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-white/5 flex-shrink-0">
+      <div id="rdAvatar" class="w-12 h-12 rounded-2xl bg-brand-500/20 flex items-center justify-center font-bold text-xl text-brand-400 flex-shrink-0 shadow-md">R</div>
+      <div class="flex-1 min-w-0">
+        <p class="font-bold truncate text-base" id="rdName">Renter</p>
+        <p class="text-xs text-white/40" id="rdMobile"></p>
+      </div>
+      <button onclick="closeRenterDetailModal()" class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-white/60 flex-shrink-0 btn-press">✕</button>
+    </div>
+    <div id="rdInfo" class="flex flex-wrap gap-x-5 gap-y-2.5 px-5 py-3.5 bg-white/3 border-b border-white/5 text-xs flex-shrink-0"></div>
+    <div id="rdActions" class="flex gap-2 px-5 py-3 border-b border-white/5 flex-shrink-0 flex-wrap"></div>
+    <div class="flex-1 overflow-y-auto scrollable px-5 py-4">
+      <p class="text-xs font-bold text-white/40 uppercase tracking-wider mb-3" id="rdBillsTitle">Bills</p>
+      <div id="rdBillsList" class="flex flex-col gap-3 pb-6"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tutorial Modal -->
+<div id="tutorialModal" class="fixed inset-0 z-[80] modal-bg hidden flex flex-col">
+  <div class="flex-1 overflow-hidden flex flex-col bg-surface-900 rounded-t-3xl mt-8 border-t border-white/10 shadow-2xl">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-white/5 flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-purple-500/15 flex items-center justify-center">
+          <svg width="15" height="15" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <span class="font-bold text-base">BijliTracker Tutorial</span>
+      </div>
+      <button onclick="closeTutorial()" class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-white/60 btn-press">✕</button>
+    </div>
+    <div class="flex gap-1.5 px-5 py-3 border-b border-white/5 flex-shrink-0 overflow-x-auto">
+      <div id="tutStepDots" class="flex gap-1.5 items-center"></div>
+    </div>
+    <div id="tutContent" class="flex-1 overflow-y-auto scrollable px-5 py-5"></div>
+    <div class="px-5 py-4 border-t border-white/5 flex gap-3 flex-shrink-0">
+      <button onclick="tutPrev()" id="tutPrevBtn" class="flex-1 rounded-xl bg-white/5 py-3 text-sm font-semibold btn-press hidden border border-white/10">← Previous</button>
+      <button onclick="tutNext()" id="tutNextBtn" class="flex-1 rounded-xl bg-brand-500 py-3 text-sm font-bold btn-press text-white shadow-md shadow-brand-500/20">Next →</button>
+      <button onclick="closeTutorial()" id="tutDoneBtn" class="flex-1 rounded-xl bg-brand-500 py-3 text-sm font-bold btn-press text-white hidden shadow-md shadow-brand-500/20">Done!</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bill Message Modal -->
+<div id="msgModal" class="fixed inset-0 z-[70] modal-bg hidden flex flex-col">
+  <div class="flex-1 overflow-hidden flex flex-col bg-surface-900 rounded-t-3xl mt-12 border-t border-white/10 shadow-2xl">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-white/5 flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-green-500/15 flex items-center justify-center">
+          <svg width="15" height="15" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.18 19.79 19.79 0 01.13 2.2 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.45-.45a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+        </div>
+        <span class="font-bold text-base">Bill Message</span>
+      </div>
+      <button onclick="closeMsgModal()" class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-white/60 btn-press">✕</button>
+    </div>
+    <div class="flex gap-1.5 px-5 py-3 border-b border-white/5 flex-shrink-0">
+      <button onclick="switchMsgTab('both')" id="msgTabBoth" class="flex-1 rounded-xl py-2 text-xs font-bold btn-press bg-brand-500 text-white transition-all">Both</button>
+      <button onclick="switchMsgTab('en')" id="msgTabEn" class="flex-1 rounded-xl py-2 text-xs font-bold btn-press bg-white/5 text-white/50 transition-all">English</button>
+      <button onclick="switchMsgTab('gu')" id="msgTabGu" class="flex-1 rounded-xl py-2 text-xs font-bold btn-press bg-white/5 text-white/50 transition-all">ગુજરાતી</button>
+    </div>
+    <div class="flex-1 overflow-y-auto scrollable px-5 py-4 flex flex-col gap-4">
+      <div id="msgSectionEn">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">English</span>
+          <div class="flex-1 h-px bg-blue-400/20"></div>
+        </div>
+        <div id="msgPreviewEn" class="bg-surface-800 border border-blue-500/20 rounded-2xl p-4 text-sm leading-relaxed whitespace-pre-wrap font-mono text-white/80"></div>
+      </div>
+      <div id="msgSectionGu">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs font-bold text-orange-400 uppercase tracking-wider">ગુજરાતી</span>
+          <div class="flex-1 h-px bg-orange-400/20"></div>
+        </div>
+        <div id="msgPreviewGu" class="bg-surface-800 border border-orange-500/20 rounded-2xl p-4 text-sm leading-relaxed whitespace-pre-wrap font-mono text-white/80"></div>
+      </div>
+    </div>
+    <div class="px-5 py-4 border-t border-white/5 flex gap-3 flex-shrink-0">
+      <button onclick="copyBillMsg()" class="flex-1 rounded-xl bg-brand-500 py-3 text-sm font-bold btn-press text-white flex items-center justify-center gap-2 shadow-md shadow-brand-500/20">
+        <svg width="15" height="15" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy
+      </button>
+      <button onclick="whatsappBillMsg()" class="flex-1 rounded-xl bg-green-600 hover:bg-green-700 py-3 text-sm font-bold btn-press text-white flex items-center justify-center gap-2 shadow-md shadow-green-900/30 transition-colors">
+        <svg width="15" height="15" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Data Modal (NEW) -->
+<div id="importModal" class="fixed inset-0 z-[70] modal-bg hidden flex items-center justify-center p-6">
+  <div class="bg-surface-800 rounded-2xl border border-white/10 p-6 w-full max-w-sm shadow-2xl">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+        <svg width="20" height="20" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div>
+        <h3 class="font-bold text-base">Import Data</h3>
+        <p class="text-xs text-white/40">Restore from JSON backup</p>
+      </div>
+    </div>
+    <div class="rounded-xl bg-amber-500/10 border border-amber-500/20 px-3 py-2.5 text-xs text-amber-300 mb-4 leading-relaxed">
+      ⚠️ This will <strong>merge</strong> imported renters and bills with your existing data. It will not delete anything.
+    </div>
+    <input type="file" id="importFileInput" accept=".json,application/json" style="display:none" onchange="processImportFile(event)"/>
+    <button onclick="document.getElementById('importFileInput').click()" class="w-full border-2 border-dashed border-blue-500/30 rounded-xl py-5 text-sm text-blue-400 font-semibold flex flex-col items-center gap-2 mb-4 hover:border-blue-500/60 hover:bg-blue-500/5 transition-colors btn-press">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Tap to select JSON file
+    </button>
+    <div id="importStatus" class="text-xs text-white/40 text-center mb-4 hidden"></div>
+    <button onclick="closeImportModal()" class="w-full rounded-xl bg-white/5 py-2.5 text-sm font-semibold btn-press border border-white/10">Close</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed top-20 left-1/2 z-[90] hidden pointer-events-none" style="transform:translateX(-50%);white-space:nowrap;animation:toastIn .25s ease">
+  <div class="glass border rounded-2xl px-5 py-3 text-sm font-semibold shadow-xl flex items-center gap-2" id="toastInner">
+    <span id="toastMsg"></span>
+  </div>
+</div>
+
+<!-- ===== SCRIPT ===== -->
+<script>
+// ==================== IndexedDB ====================
+let db;
+const DB_NAME = 'BijliTracker';
+const DB_VERSION = 3;
+const S_BILLS = 'bills';
+const S_RENTERS = 'renters';
+
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(S_BILLS)) {
+        const s = d.createObjectStore(S_BILLS, {keyPath:'id', autoIncrement:true});
+        s.createIndex('date','date',{unique:false});
+        s.createIndex('renterId','renterId',{unique:false});
+      } else {
+        const store = e.target.transaction.objectStore(S_BILLS);
+        if (!store.indexNames.contains('renterId')) {
+          store.createIndex('renterId','renterId',{unique:false});
+        }
+      }
+      if (!d.objectStoreNames.contains(S_RENTERS)) {
+        d.createObjectStore(S_RENTERS, {keyPath:'id', autoIncrement:true});
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; resolve(db); };
+    req.onerror = e => reject(e.target.error);
+  });
+}
+function dbGetAll(store) {
+  return new Promise((resolve, reject) => {
+    const req = db.transaction([store],'readonly').objectStore(store).getAll();
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+function dbAdd(store, record) {
+  return new Promise((resolve, reject) => {
+    const req = db.transaction([store],'readwrite').objectStore(store).add(record);
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+function dbPut(store, record) {
+  return new Promise((resolve, reject) => {
+    const req = db.transaction([store],'readwrite').objectStore(store).put(record);
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+function dbDelete(store, id) {
+  return new Promise((resolve, reject) => {
+    const req = db.transaction([store],'readwrite').objectStore(store).delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = e => reject(e.target.error);
+  });
+}
+function dbClear(store) {
+  return new Promise((resolve, reject) => {
+    const req = db.transaction([store],'readwrite').objectStore(store).clear();
+    req.onsuccess = () => resolve();
+    req.onerror = e => reject(e.target.error);
+  });
+}
+
+// ==================== State ====================
+let allBills = [];
+let allRenters = [];
+let pendingPhotoB64 = null;
+let chatHistory = [];
+let pendingDeleteId = null;
+let pendingDeleteStore = null;
+let isDark = true;
+let viewingRenterId = null;
+
+// ==================== Settings ====================
+const gs = (k, d='') => localStorage.getItem('bt_' + k) || d;
+const ss = (k, v) => localStorage.setItem('bt_' + k, v);
+
+// ==================== Helpers ====================
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(d) {
+  if (!d) return '';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+}
+function fmtMonth(d) {
+  if (!d) return '';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', {month:'short', year:'2-digit'});
+}
+function renterName(rid) {
+  if (!rid) return '';
+  const r = allRenters.find(x => x.id === rid);
+  return r ? r.name : '';
+}
+function flashSyncDot() {
+  const d = document.getElementById('syncDot');
+  d.style.opacity = '1';
+  setTimeout(() => { d.style.opacity = '0'; }, 1200);
+}
+
+// ==================== Init ====================
+async function init() {
+  await initDB();
+  const [bills, renters] = await Promise.all([dbGetAll(S_BILLS), dbGetAll(S_RENTERS)]);
+  allBills   = bills.sort((a, b) => new Date(b.date) - new Date(a.date));
+  allRenters = renters.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const rate = gs('rate');
+  if (rate) {
+    document.getElementById('pricePerUnit').value = rate;
+    document.getElementById('currentRate').textContent = '₹' + parseFloat(rate).toFixed(2) + '/unit';
+  }
+  const groqKey = gs('groqKey');
+  if (groqKey) {
+    document.getElementById('groqApiKey').value = groqKey;
+    document.getElementById('apiKeyWarning').style.display = 'none';
+    document.getElementById('aiStatusDot').className = 'w-2 h-2 rounded-full bg-green-400';
+    document.getElementById('aiStatusLabel').textContent = 'Ready';
+    document.getElementById('aiStatusLabel').className = 'text-xs text-green-400';
+  }
+
+  isDark = gs('theme', 'dark') !== 'light';
+  applyTheme();
+
+  document.getElementById('billDate').value = todayStr();
+  document.getElementById('renterMoveIn').value = todayStr();
+
+  // Lang preference
+  const savedLang = gs('msgLang', 'both');
+  _applyLangBtns(savedLang);
+  const labels = { both: 'Both languages', en: 'English only', gu: 'ગુજરાતી only' };
+  document.getElementById('currentLang').textContent = labels[savedLang] || 'Both languages';
+
+  document.getElementById('prevReading').addEventListener('input', updateLiveCalc);
+  document.getElementById('currReading').addEventListener('input', updateLiveCalc);
+
+  renderDashboard();
+  renderHistory();
+  renderRenters();
+  populateBillRenterSelect();
+
+  if (!gs('tutorialSeen')) { ss('tutorialSeen', '1'); setTimeout(openTutorial, 700); }
+}
+
+// ==================== Theme ====================
+function toggleTheme() { isDark = !isDark; ss('theme', isDark ? 'dark' : 'light'); applyTheme(); }
+function applyTheme() {
+  document.documentElement.classList.toggle('dark', isDark);
+  document.getElementById('sunIcon').classList.toggle('hidden', !isDark);
+  document.getElementById('moonIcon').classList.toggle('hidden', isDark);
+  document.getElementById('themeColorMeta').content = isDark ? '#07111e' : '#f0f4f8';
+}
+
+// ==================== Tab Switching ====================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active', 'text-brand-400');
+    n.classList.add('text-white/40');
+  });
+  document.getElementById('tab-' + tab).classList.add('active');
+  const btn = document.querySelector('[data-tab="' + tab + '"]');
+  if (btn) { btn.classList.add('active', 'text-brand-400'); btn.classList.remove('text-white/40'); }
+  if (tab === 'chat') setTimeout(() => { const c = document.getElementById('chatMessages'); c.scrollTop = c.scrollHeight; }, 50);
+  if (tab === 'history') renderHistory();
+  if (tab === 'renters') renderRenters();
+  if (tab === 'settings') {
+    document.getElementById('totalBillsInfo').textContent   = allBills.length;
+    document.getElementById('totalRentersInfo').textContent = allRenters.length;
+  }
+}
+
+// ==================== Auto-fill Previous Reading (Bug Fix + New Feature) ====================
+function onBillRenterChange() {
+  const sel = document.getElementById('billRenter');
+  const rid = parseInt(sel.value) || null;
+  if (!rid) return;
+  // Find the latest bill for this renter and auto-fill previous reading
+  const renterBills = allBills
+    .filter(b => b.renterId === rid)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (renterBills.length > 0) {
+    const lastBill = renterBills[0];
+    const prevInput = document.getElementById('prevReading');
+    if (!prevInput.value || prevInput.value === '0') {
+      prevInput.value = lastBill.curr;
+      updateLiveCalc();
+      showToast('📋 Previous reading auto-filled from last bill (' + fmtDate(lastBill.date) + ')');
+    }
+  }
+}
+
+// ==================== Bill Paid Toggle ====================
+async function toggleBillPaid(id) {
+  const b = allBills.find(x => x.id === id); if (!b) return;
+  const newPaid = !b.paid;
+  await dbPut(S_BILLS, {...b, paid: newPaid});
+  allBills = (await dbGetAll(S_BILLS)).sort((a, bx) => new Date(bx.date) - new Date(a.date));
+  renderHistory();
+  renderDashboard();
+  if (viewingRenterId) {
+    const rd = document.getElementById('renterDetailModal');
+    if (!rd.classList.contains('hidden')) openRenterDetail(viewingRenterId);
+  }
+  flashSyncDot();
+  showToast(newPaid ? '✅ Marked as Paid!' : '↩️ Marked as Unpaid', newPaid ? 'success' : 'info');
+}
+
+// ==================== Toggle Recent Bills (Bug Fixed: chevron direction) ====================
+function toggleRecentBills() {
+  const panel = document.getElementById('recentBillsCollapsible');
+  const chevron = document.getElementById('recentBillsChevron');
+  const isOpen = panel.style.display === 'flex' || (!panel.classList.contains('hidden') && panel.style.display !== 'none');
+  if (isOpen) {
+    panel.classList.add('hidden');
+    panel.style.display = '';
+    chevron.style.transform = 'rotate(0deg)'; // pointing down = collapsed
+  } else {
+    panel.classList.remove('hidden');
+    panel.style.display = 'flex';
+    panel.style.flexDirection = 'column';
+    chevron.style.transform = 'rotate(180deg)'; // pointing up = expanded
+  }
+}
+
+// ==================== Live Calculation ====================
+function updateLiveCalc() {
+  const prev  = parseFloat(document.getElementById('prevReading').value) || 0;
+  const curr  = parseFloat(document.getElementById('currReading').value) || 0;
+  const rate  = parseFloat(gs('rate', '0')) || 0;
+  const pump  = parseFloat(document.getElementById('pumpBill').value) || 0;
+  const units = Math.max(0, curr - prev);
+  const elec  = units * rate;
+  const total = elec + pump;
+  document.getElementById('unitsCalc').textContent = units;
+  document.getElementById('liveCalc').textContent = '₹' + elec.toFixed(2);
+  if (pump > 0) {
+    document.getElementById('livePumpRow').classList.remove('hidden');
+    document.getElementById('livePumpRow').style.display = 'flex';
+    document.getElementById('liveTotalRow').classList.remove('hidden');
+    document.getElementById('liveTotalRow').style.display = 'flex';
+    document.getElementById('livePump').textContent  = '₹' + pump.toFixed(2);
+    document.getElementById('liveTotal').textContent = '₹' + total.toFixed(2);
+  } else {
+    document.getElementById('livePumpRow').classList.add('hidden');
+    document.getElementById('livePumpRow').style.display = '';
+    document.getElementById('liveTotalRow').classList.add('hidden');
+    document.getElementById('liveTotalRow').style.display = '';
+  }
+}
+
+// ==================== Photo ====================
+async function openCamera() {
+  const _tryGetPermission = async () => {
+    try {
+      if (navigator.permissions) {
+        const status = await navigator.permissions.query({name:'camera'});
+        if (status.state === 'denied') { showCameraBlockedModal(); return false; }
+      }
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({video:true});
+        stream.getTracks().forEach(t => t.stop());
+      }
+      return true;
+    } catch(err) {
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        showCameraBlockedModal(); return false;
+      }
+      showToast('⚠️ Camera unavailable — use Gallery instead', 'warning');
+      return false;
+    }
+  };
+  const granted = await _tryGetPermission();
+  if (!granted) return;
+  document.getElementById('billPhotoCamera').value = '';
+  document.getElementById('billPhotoCamera').click();
+}
+function showCameraBlockedModal() { document.getElementById('cameraBlockedModal').classList.remove('hidden'); }
+function closeCameraBlockedModal() { document.getElementById('cameraBlockedModal').classList.add('hidden'); }
+async function retryCameraPermission() { closeCameraBlockedModal(); await openCamera(); }
+
+function previewPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img2 = new Image();
+    img2.onload = () => {
+      const MAX = 900;
+      let w = img2.width, h = img2.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img2, 0, 0, w, h);
+      pendingPhotoB64 = canvas.toDataURL('image/jpeg', 0.82);
+      document.getElementById('photoPreviewImg').src = pendingPhotoB64;
+      document.getElementById('photoPreviewBox').classList.remove('hidden');
+      document.getElementById('photoPreviewBox').style.display = 'inline-block';
+      const lbl = document.getElementById('photoLabel');
+      lbl.textContent = '✅ Photo attached — tap to change';
+      lbl.style.color = '#4ade80';
+    };
+    img2.onerror = () => showToast('⚠️ Could not load image', 'error');
+    img2.src = ev.target.result;
+  };
+  reader.onerror = () => showToast('⚠️ Could not read image file', 'error');
+  reader.readAsDataURL(file);
+}
+function clearPhoto() {
+  pendingPhotoB64 = null;
+  const box = document.getElementById('photoPreviewBox');
+  box.classList.add('hidden'); box.style.display = '';
+  document.getElementById('photoPreviewImg').src = '';
+  const lbl = document.getElementById('photoLabel');
+  lbl.textContent = 'No photo attached'; lbl.style.color = '';
+  try { document.getElementById('billPhotoCamera').value = ''; } catch(e){}
+  try { document.getElementById('billPhotoGallery').value = ''; } catch(e){}
+}
+
+// ==================== Save Bill ====================
+async function saveBill() {
+  const prev     = parseFloat(document.getElementById('prevReading').value);
+  const curr     = parseFloat(document.getElementById('currReading').value);
+  const date     = document.getElementById('billDate').value;
+  const notes    = document.getElementById('billNotes').value.trim();
+  const rate     = parseFloat(gs('rate', '0'));
+  const renterId = parseInt(document.getElementById('billRenter').value) || null;
+  const pump     = parseFloat(document.getElementById('pumpBill').value) || 0;
+
+  if (isNaN(prev) || isNaN(curr) || !date) { showToast('⚠️ Fill in readings and date', 'error'); return; }
+  if (curr < prev)  { showToast('⚠️ Current reading must be ≥ previous', 'error'); return; }
+  if (!rate)        { showToast('⚠️ Set price per unit in Settings first', 'warning'); switchTab('settings'); return; }
+  if (allRenters.length > 0 && !renterId) { showToast('⚠️ Please select a renter', 'error'); return; }
+
+  const units       = curr - prev;
+  const elecAmount  = units * rate;
+  const amount      = elecAmount + pump;
+
+  await dbAdd(S_BILLS, {
+    prev, curr, units, rate, elecAmount, pumpBill: pump,
+    amount, date, notes, renterId, photo: pendingPhotoB64,
+    paid: false, createdAt: Date.now()
+  });
+  allBills = (await dbGetAll(S_BILLS)).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Reset form
+  document.getElementById('prevReading').value = '';
+  document.getElementById('currReading').value = '';
+  document.getElementById('unitsCalc').textContent = '0';
+  document.getElementById('liveCalc').textContent = '₹0.00';
+  document.getElementById('billNotes').value = '';
+  document.getElementById('billDate').value = todayStr();
+  document.getElementById('pumpBill').value = '';
+  document.getElementById('livePumpRow').classList.add('hidden');
+  document.getElementById('liveTotalRow').classList.add('hidden');
+  clearPhoto();
+  renderDashboard();
+  renderRenters();
+  flashSyncDot();
+  showToast('✅ Bill saved!', 'success');
+}
+
+// ==================== Dashboard ====================
+function renderDashboard() {
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  const thisMonth = now.getMonth();
+
+  // Hero
+  document.getElementById('heroBillCount').textContent = allBills.length;
+  if (allBills.length > 0) {
+    const b = allBills[0];
+    document.getElementById('heroAmount').textContent = '₹' + b.amount.toFixed(2);
+    document.getElementById('heroUnits').textContent  = b.units + ' kWh';
+    document.getElementById('heroRate').textContent   = '₹' + b.rate.toFixed(2);
+  } else {
+    const savedRate = gs('rate');
+    document.getElementById('heroAmount').textContent = '₹0.00';
+    document.getElementById('heroUnits').textContent  = '—';
+    document.getElementById('heroRate').textContent   = savedRate ? '₹' + parseFloat(savedRate).toFixed(2) : '—';
+  }
+
+  // Quick stats
+  const unpaidBills  = allBills.filter(b => !b.paid);
+  const pendingTotal = unpaidBills.reduce((s, b) => s + b.amount, 0);
+  const thisMonthPaid = allBills.filter(b => {
+    const d = new Date(b.date + 'T00:00:00');
+    return b.paid && d.getFullYear() === thisYear && d.getMonth() === thisMonth;
+  }).reduce((s, b) => s + b.amount, 0);
+  const activeRenters = allRenters.filter(r => !r.moveOutDate).length;
+  const avgBill = allBills.length ? (allBills.reduce((s, b) => s + b.amount, 0) / allBills.length) : 0;
+
+  document.getElementById('statPending').textContent = '₹' + pendingTotal.toFixed(0);
+  document.getElementById('statPendingCount').textContent = unpaidBills.length + ' unpaid bill' + (unpaidBills.length !== 1 ? 's' : '');
+  document.getElementById('statThisMonth').textContent = '₹' + thisMonthPaid.toFixed(0);
+  const monthName = now.toLocaleDateString('en-IN', {month:'short'});
+  document.getElementById('statThisMonthLabel').textContent = 'collected in ' + monthName;
+  document.getElementById('statActiveRenters').textContent = activeRenters;
+  document.getElementById('statAvgBill').textContent = avgBill ? '₹' + avgBill.toFixed(0) : '₹0';
+
+  // Monthly trend (last 6 months)
+  renderTrendChart();
+
+  // Recent bills
+  const recent = allBills.slice(0, 4);
+  const c = document.getElementById('recentBillsList');
+  c.innerHTML = recent.length
+    ? recent.map(b => billCardHTML(b, true)).join('')
+    : '<div class="text-center text-white/30 text-sm py-6">No bills yet. Add your first bill above!</div>';
+}
+
+function renderTrendChart() {
+  const chart = document.getElementById('trendChart');
+  if (!allBills.length) {
+    chart.innerHTML = '<p class="text-xs text-white/20 w-full text-center py-4">No data yet</p>';
+    return;
+  }
+  // Build last 6 months
+  const now = new Date();
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleDateString('en-IN', {month:'short'}) });
+  }
+  const data = months.map(m => {
+    const total = allBills
+      .filter(b => {
+        const bd = new Date(b.date + 'T00:00:00');
+        return bd.getFullYear() === m.year && bd.getMonth() === m.month;
+      })
+      .reduce((s, b) => s + b.amount, 0);
+    return { ...m, total };
+  });
+  const maxVal = Math.max(...data.map(d => d.total), 1);
+  const grandTotal = data.reduce((s, d) => s + d.total, 0);
+  document.getElementById('trendTotal').textContent = '₹' + grandTotal.toFixed(0) + ' (6 mo)';
+  const currentMonth = now.getMonth();
+  chart.innerHTML = data.map(d => {
+    const pct = Math.max(4, Math.round((d.total / maxVal) * 100));
+    const isCur = d.month === currentMonth && d.year === now.getFullYear();
+    return `<div class="flex flex-col items-center gap-1 flex-1">
+      <span class="text-xs font-mono text-white/40 leading-none" style="font-size:9px">${d.total > 0 ? '₹' + (d.total >= 1000 ? (d.total/1000).toFixed(1) + 'k' : d.total.toFixed(0)) : ''}</span>
+      <div class="w-full flex items-end justify-center" style="height:48px">
+        <div class="trend-bar w-full ${isCur ? 'bg-brand-400' : 'bg-white/15'}" style="height:${pct}%;min-height:4px;border-radius:4px 4px 0 0"></div>
+      </div>
+      <span class="text-xs font-medium ${isCur ? 'text-brand-400' : 'text-white/30'}" style="font-size:9px">${d.label}</span>
+    </div>`;
+  }).join('');
+}
+
+// ==================== History ====================
+function renderHistory() {
+  populateFilterDropdown();
+  const q      = (document.getElementById('searchBills').value || '').toLowerCase();
+  const fid    = parseInt(document.getElementById('filterRenter').value) || null;
+  const sort   = document.getElementById('historySortBy').value;
+  const payF   = document.getElementById('historyPayFilter').value;
+
+  let filtered = allBills.filter(b => {
+    const rn   = renterName(b.renterId).toLowerCase();
+    const ok1  = !q || b.date.includes(q) || (b.notes||'').toLowerCase().includes(q) ||
+                 b.amount.toFixed(0).includes(q) || String(b.units).includes(q) || rn.includes(q);
+    const ok2  = !fid || b.renterId === fid;
+    const ok3  = payF === 'all' || (payF === 'paid' && b.paid) || (payF === 'unpaid' && !b.paid);
+    return ok1 && ok2 && ok3;
+  });
+
+  if (sort === 'date_asc')    filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+  else if (sort === 'date_desc')  filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+  else if (sort === 'amount_desc') filtered.sort((a, b) => b.amount - a.amount);
+  else if (sort === 'amount_asc')  filtered.sort((a, b) => a.amount - b.amount);
+
+  document.getElementById('historyCount').textContent = filtered.length + ' bill' + (filtered.length !== 1 ? 's' : '');
+  const c = document.getElementById('historyList');
+  c.innerHTML = filtered.length
+    ? filtered.map(b => billCardHTML(b, false)).join('')
+    : '<div class="text-center text-white/30 text-sm py-10">' + (q || fid || payF !== 'all' ? 'No bills match your filter.' : 'Your bill history will appear here.') + '</div>';
+}
+
+function populateFilterDropdown() {
+  const sel = document.getElementById('filterRenter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Renters</option>';
+  allRenters.forEach(r => {
+    const o = document.createElement('option');
+    o.value = r.id; o.textContent = r.name + (r.moveOutDate ? ' (past)' : '');
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+// ==================== Bill Card HTML ====================
+function billCardHTML(b, compact) {
+  const ds  = fmtDate(b.date);
+  const rn  = renterName(b.renterId);
+  const ph  = b.photo
+    ? `<img src="${b.photo}" onclick="openPhotoModal(${b.id})" class="photo-thumb ml-2 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity" alt="bill"/>`
+    : '';
+  const rb  = rn ? `<span class="text-xs bg-brand-500/10 text-brand-400 px-2 py-0.5 rounded-lg border border-brand-500/15 font-medium">${esc(rn)}</span>` : '';
+  const nb  = b.notes ? `<span class="text-xs bg-white/5 px-2 py-0.5 rounded-lg text-white/50">${esc(b.notes.slice(0,22) + (b.notes.length > 22 ? '…' : ''))}</span>` : '';
+  const pump = b.pumpBill > 0 ? `<span class="text-xs text-blue-400">+₹${b.pumpBill.toFixed(0)} pump</span>` : '';
+  const isPaid = !!b.paid;
+  const paidBadge = isPaid
+    ? `<span class="text-xs bg-green-500/12 text-green-400 px-2 py-0.5 rounded-lg border border-green-500/20 font-semibold">✓ Paid</span>`
+    : `<span class="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-lg border border-amber-500/20 font-semibold">Unpaid</span>`;
+
+  const payBtn = !compact
+    ? `<button onclick="toggleBillPaid(${b.id})" class="ml-1 w-8 h-8 rounded-xl flex items-center justify-center btn-press flex-shrink-0 ${isPaid ? 'bg-amber-500/10 text-amber-400' : 'bg-green-500/10 text-green-400'}" title="${isPaid ? 'Mark Unpaid' : 'Mark Paid'}">
+        ${isPaid
+          ? `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+          : `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`
+        }
+      </button>` : '';
+  const msgBtn = !compact && b.renterId
+    ? `<button onclick="openBillMsgForBill(${b.id})" class="ml-1 w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 btn-press flex-shrink-0" title="Send bill message">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.18 19.79 19.79 0 01.13 2.2 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.45-.45a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+      </button>` : '';
+  const del = !compact
+    ? `<button onclick="confirmDeleteBill(${b.id})" class="ml-1 w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 btn-press flex-shrink-0">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      </button>` : '';
+
+  const leftBorder = isPaid ? 'border-l-2 border-l-green-500/50' : 'border-l-2 border-l-amber-500/40';
+
+  return `<div class="rounded-2xl bg-surface-800 border border-white/8 ${leftBorder} p-4 slide-up card-glow">
+    <div class="flex items-start justify-between gap-2">
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+          <span class="text-xs text-white/40 font-medium">${ds}</span>${rb}${nb}${paidBadge}
+        </div>
+        <p class="text-xl font-bold ${isPaid ? 'text-green-400' : 'text-brand-400'} font-mono">₹${b.amount.toFixed(2)}</p>
+        <div class="flex flex-wrap gap-3 mt-1.5 text-xs text-white/40">
+          <span><span class="text-white/65 font-medium">${b.units}</span> kWh</span>
+          <span><span class="text-white/65">${b.prev}</span>→<span class="text-white/65">${b.curr}</span></span>
+          <span>@₹<span class="text-white/65">${b.rate.toFixed(2)}</span></span>
+          ${pump}
+        </div>
+      </div>
+      <div class="flex items-center flex-shrink-0">${ph}${payBtn}${msgBtn}${del}</div>
+    </div>
+  </div>`;
+}
+
+// ==================== Bill Renter Select ====================
+function populateBillRenterSelect() {
+  const sel = document.getElementById('billRenter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Select Renter —</option>';
+  const active = allRenters.filter(r => !r.moveOutDate);
+  const past   = allRenters.filter(r =>  r.moveOutDate);
+  if (active.length) {
+    const g = document.createElement('optgroup'); g.label = 'Current Renters';
+    active.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r.id; o.textContent = r.name + (r.room ? ' — ' + r.room : '');
+      g.appendChild(o);
+    });
+    sel.appendChild(g);
+  }
+  if (past.length) {
+    const g = document.createElement('optgroup'); g.label = 'Past Renters';
+    past.forEach(r => {
+      const o = document.createElement('option');
+      o.value = r.id; o.textContent = r.name + ' (moved out)';
+      g.appendChild(o);
+    });
+    sel.appendChild(g);
+  }
+  if (active.length === 1 && !cur) sel.value = String(active[0].id);
+  else if (cur) sel.value = cur;
+}
+
+// ==================== Render Renters ====================
+function renderRenters() {
+  const q = (document.getElementById('searchRenters').value || '').toLowerCase();
+  let active = allRenters.filter(r => !r.moveOutDate);
+  let past   = allRenters.filter(r =>  r.moveOutDate);
+  if (q) {
+    active = active.filter(r => r.name.toLowerCase().includes(q) || (r.mobile||'').includes(q) || (r.room||'').toLowerCase().includes(q));
+    past   = past.filter(r => r.name.toLowerCase().includes(q) || (r.mobile||'').includes(q) || (r.room||'').toLowerCase().includes(q));
+  }
+
+  const cc = document.getElementById('currentRentersList');
+  cc.innerHTML = active.length
+    ? '<div class="flex flex-col gap-3">' + active.map(r => renterCardHTML(r)).join('') + '</div>'
+    : '<div class="text-center text-white/30 text-sm py-8 rounded-2xl bg-surface-800 border border-white/8">' + (q ? 'No renters match your search.' : 'No active renters. Tap Add Renter to get started.') + '</div>';
+
+  const ps = document.getElementById('pastRentersSection');
+  const pc = document.getElementById('pastRentersList');
+  if (past.length) {
+    ps.classList.remove('hidden');
+    pc.innerHTML = past.map(r => renterCardHTML(r)).join('');
+  } else {
+    ps.classList.add('hidden');
+  }
+
+  populateBillRenterSelect();
+  populateFilterDropdown();
+}
+
+function renterCardHTML(r) {
+  const bills    = allBills.filter(b => b.renterId === r.id);
+  const total    = bills.reduce((s, b) => s + b.amount, 0);
+  const unpaid   = bills.filter(b => !b.paid).reduce((s, b) => s + b.amount, 0);
+  const isActive = !r.moveOutDate;
+  const lastBill = bills.length ? fmtDate(bills.sort((a,b) => new Date(b.date)-new Date(a.date))[0].date) : null;
+  const avgUnits = bills.length ? (bills.reduce((s, b) => s + b.units, 0) / bills.length).toFixed(0) : 0;
+  return `<div class="rounded-2xl bg-surface-800 border border-white/8 p-4 slide-up cursor-pointer btn-press card-glow hover:border-white/15 transition-colors" onclick="openRenterDetail(${r.id})">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl flex-shrink-0 ${isActive ? 'bg-brand-500/15 text-brand-400' : 'bg-white/5 text-white/30'} shadow-sm">
+        ${esc(r.name.charAt(0).toUpperCase())}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-0.5">
+          <p class="font-bold text-sm truncate">${esc(r.name)}</p>
+          <span class="flex-shrink-0 text-xs px-1.5 py-0.5 rounded-lg font-semibold ${isActive ? 'bg-brand-500/10 text-brand-400' : 'bg-white/5 text-white/30'}">
+            ${isActive ? 'Active' : 'Past'}
+          </span>
+        </div>
+        ${r.mobile ? `<p class="text-xs text-white/40 font-mono">📱 ${esc(r.mobile)}</p>` : ''}
+        <p class="text-xs text-white/25 mt-0.5">${r.room ? '🏠 ' + esc(r.room) + ' · ' : ''}${lastBill ? 'Last: ' + lastBill : 'No bills'}${bills.length ? ' · avg ' + avgUnits + ' kWh' : ''}</p>
+      </div>
+      <div class="text-right flex-shrink-0">
+        <p class="text-brand-400 font-bold font-mono text-sm">₹${total.toFixed(0)}</p>
+        <p class="text-xs text-white/30">${bills.length} bill${bills.length !== 1 ? 's' : ''}</p>
+        ${unpaid > 0
+          ? `<p class="text-xs text-amber-400 font-mono font-semibold mt-0.5">₹${unpaid.toFixed(0)} due</p>`
+          : (bills.length > 0 ? `<p class="text-xs text-green-400 font-semibold mt-0.5">All paid ✓</p>` : '')
+        }
+      </div>
+    </div>
+  </div>`;
+}
+
+// ==================== Renter Modal ====================
+function openRenterModal(editId) {
+  document.getElementById('renterEditId').value = editId || '';
+  if (editId) {
+    const r = allRenters.find(x => x.id === editId); if (!r) return;
+    document.getElementById('renterModalTitle').textContent = 'Edit Renter';
+    document.getElementById('renterName').value    = r.name;
+    document.getElementById('renterMobile').value  = r.mobile || '';
+    document.getElementById('renterMoveIn').value  = r.moveInDate || '';
+    document.getElementById('renterMoveOut').value = r.moveOutDate || '';
+    document.getElementById('renterRoom').value    = r.room || '';
+    document.getElementById('renterNotes').value   = r.notes || '';
+  } else {
+    document.getElementById('renterModalTitle').textContent = 'Add Renter';
+    ['renterName','renterMobile','renterMoveOut','renterRoom','renterNotes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('renterMoveIn').value = todayStr();
+  }
+  const el = document.getElementById('renterModal');
+  el.classList.remove('hidden');
+  el.classList.add('modal-sheet-enter', 'modal-bg-enter');
+  setTimeout(() => el.classList.remove('modal-sheet-enter', 'modal-bg-enter'), 360);
+}
+function closeRenterModal() {
+  const el = document.getElementById('renterModal');
+  el.classList.add('modal-sheet-exit', 'modal-bg-exit');
+  setTimeout(() => { el.classList.add('hidden'); el.classList.remove('modal-sheet-exit','modal-bg-exit'); }, 230);
+}
+
+async function saveRenter() {
+  const name       = document.getElementById('renterName').value.trim();
+  const mobile     = document.getElementById('renterMobile').value.trim();
+  const moveInDate = document.getElementById('renterMoveIn').value;
+  const moveOutDate= document.getElementById('renterMoveOut').value || null;
+  const room       = document.getElementById('renterRoom').value.trim();
+  const notes      = document.getElementById('renterNotes').value.trim();
+  const editId     = parseInt(document.getElementById('renterEditId').value) || null;
+
+  if (!name)      { showToast('⚠️ Renter name is required', 'error'); return; }
+  if (!moveInDate){ showToast('⚠️ Move-in date is required', 'error'); return; }
+  if (moveOutDate && moveOutDate < moveInDate) { showToast('⚠️ Move-out must be after move-in', 'error'); return; }
+  if (mobile && !/^\d{7,15}$/.test(mobile.replace(/\s/g,''))) { showToast('⚠️ Enter a valid mobile number', 'warning'); return; }
+
+  if (editId) {
+    const existing = allRenters.find(r => r.id === editId); if (!existing) return;
+    await dbPut(S_RENTERS, {id: editId, name, mobile, moveInDate, moveOutDate, room, notes, createdAt: existing.createdAt});
+    showToast('✅ Renter updated!', 'success');
+  } else {
+    await dbAdd(S_RENTERS, {name, mobile, moveInDate, moveOutDate, room, notes, createdAt: Date.now()});
+    showToast('✅ Renter added!', 'success');
+  }
+  allRenters = (await dbGetAll(S_RENTERS)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  closeRenterModal();
+  renderRenters();
+  renderDashboard();
+  flashSyncDot();
+  if (viewingRenterId) openRenterDetail(viewingRenterId);
+}
+
+// ==================== Renter Detail ====================
+function openRenterDetail(rid) {
+  viewingRenterId = rid;
+  const r = allRenters.find(x => x.id === rid); if (!r) return;
+  const bills    = allBills.filter(b => b.renterId === rid).sort((a, b) => new Date(b.date) - new Date(a.date));
+  const total    = bills.reduce((s, b) => s + b.amount, 0);
+  const isActive = !r.moveOutDate;
+
+  const av = document.getElementById('rdAvatar');
+  av.textContent = r.name.charAt(0).toUpperCase();
+  av.className = `w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-md ${isActive ? 'bg-brand-500/20 text-brand-400' : 'bg-white/5 text-white/30'}`;
+  document.getElementById('rdName').textContent   = r.name;
+  document.getElementById('rdMobile').textContent = r.mobile ? '📱 ' + r.mobile : (r.room ? '🏠 ' + r.room : '');
+
+  // Info strip
+  const per = r.moveOutDate
+    ? fmtDate(r.moveInDate) + ' → ' + fmtDate(r.moveOutDate)
+    : fmtDate(r.moveInDate) + ' → Present';
+  const unpaidAmt = bills.filter(b => !b.paid).reduce((s, b) => s + b.amount, 0);
+  const paidAmt   = bills.filter(b =>  b.paid).reduce((s, b) => s + b.amount, 0);
+  const avgUnits  = bills.length ? (bills.reduce((s,b) => s + b.units, 0) / bills.length).toFixed(0) : 0;
+
+  let info = `<div class="text-white/50"><p class="font-semibold text-white/70 text-xs">${per}</p><p class="text-xs mt-0.5">Stay Period</p></div>`;
+  if (r.room) info += `<div class="text-white/50"><p class="font-semibold text-white/70 text-xs">${esc(r.room)}</p><p class="text-xs mt-0.5">Room</p></div>`;
+  info += `<div class="text-white/50"><p class="font-semibold text-brand-400 font-mono text-xs">₹${total.toFixed(0)}</p><p class="text-xs mt-0.5">Total Billed</p></div>`;
+  info += `<div class="text-white/50"><p class="font-semibold text-green-400 font-mono text-xs">₹${paidAmt.toFixed(0)}</p><p class="text-xs mt-0.5">Paid</p></div>`;
+  if (unpaidAmt > 0) info += `<div class="text-white/50"><p class="font-semibold text-amber-400 font-mono text-xs">₹${unpaidAmt.toFixed(0)}</p><p class="text-xs mt-0.5">Pending</p></div>`;
+  info += `<div class="text-white/50"><p class="font-semibold text-white/70 text-xs">${bills.length}</p><p class="text-xs mt-0.5">Bills</p></div>`;
+  if (bills.length) info += `<div class="text-white/50"><p class="font-semibold text-white/70 text-xs">${avgUnits} kWh</p><p class="text-xs mt-0.5">Avg Usage</p></div>`;
+  if (r.notes) info += `<div class="text-white/50 col-span-2"><p class="font-semibold text-white/60 text-xs">${esc(r.notes)}</p><p class="text-xs mt-0.5">Notes</p></div>`;
+  document.getElementById('rdInfo').innerHTML = info;
+
+  let actions = `<button onclick="closeRenterDetailModal(()=>openRenterModal(${rid}))" class="flex-1 rounded-xl bg-white/5 py-2 text-xs font-semibold btn-press flex items-center justify-center gap-1.5 border border-white/10">
+    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit
+  </button>`;
+  if (isActive) {
+    actions += `<button onclick="closeRenterDetailModal(()=>promptMoveOut(${rid}))" class="flex-1 rounded-xl bg-amber-500/10 border border-amber-500/20 py-2 text-xs font-semibold text-amber-400 btn-press flex items-center justify-center gap-1.5">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Move Out
+    </button>`;
+  }
+  if (bills.length > 0) {
+    actions += `<button onclick="openBillMsg(${rid})" class="flex-1 rounded-xl bg-green-600/15 border border-green-500/20 py-2 text-xs font-semibold text-green-400 btn-press flex items-center justify-center gap-1.5">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.18 19.79 19.79 0 01.13 2.2 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.45-.45a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>Send Bill
+    </button>`;
+  }
+  actions += `<button onclick="closeRenterDetailModal(()=>confirmDeleteRenter(${rid}))" class="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 btn-press flex-shrink-0">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+  </button>`;
+  document.getElementById('rdActions').innerHTML = actions;
+
+  // Bills list
+  document.getElementById('rdBillsTitle').textContent = `Bills (${bills.length})`;
+  const bl = document.getElementById('rdBillsList');
+  if (!bills.length) {
+    bl.innerHTML = '<div class="text-center text-white/30 text-sm py-8">No bills recorded for this renter yet.</div>';
+  } else {
+    bl.innerHTML = bills.map(b => {
+      const ph = b.photo ? `<img src="${b.photo}" onclick="openPhotoModal(${b.id})" class="photo-thumb ml-2 flex-shrink-0 cursor-pointer" alt="bill"/>` : '';
+      const pumpLine = b.pumpBill > 0 ? `<span class="text-blue-400 text-xs">+₹${b.pumpBill.toFixed(0)} pump</span>` : '';
+      const isPaid = !!b.paid;
+      const paidBadge = isPaid
+        ? `<span class="text-xs bg-green-500/12 text-green-400 px-2 py-0.5 rounded-lg border border-green-500/20 font-semibold">✓ Paid</span>`
+        : `<span class="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-lg border border-amber-500/20 font-semibold">Unpaid</span>`;
+      return `<div class="rounded-2xl border ${isPaid ? 'bg-green-500/4 border-green-500/20 border-l-2 border-l-green-500/50' : 'bg-surface-800 border-white/8 border-l-2 border-l-amber-500/30'} p-4">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center gap-1.5 mb-1"><p class="text-xs text-white/40">${fmtDate(b.date)}${b.notes ? ' · ' + esc(b.notes) : ''}</p>${paidBadge}</div>
+            <p class="text-lg font-bold ${isPaid ? 'text-green-400' : 'text-brand-400'} font-mono">₹${b.amount.toFixed(2)}</p>
+            <div class="flex flex-wrap gap-3 mt-1 text-xs text-white/40">
+              <span><span class="text-white/65">${b.units}</span> kWh</span>
+              <span><span class="text-white/65">${b.prev}</span>→<span class="text-white/65">${b.curr}</span></span>
+              <span>@₹<span class="text-white/65">${b.rate.toFixed(2)}</span></span>
+              ${pumpLine}
+            </div>
+          </div>
+          <div class="flex items-center flex-shrink-0">
+            ${ph}
+            <button onclick="toggleBillPaid(${b.id})" class="ml-1 w-8 h-8 rounded-xl flex items-center justify-center btn-press flex-shrink-0 ${isPaid ? 'bg-amber-500/10 text-amber-400' : 'bg-green-500/10 text-green-400'}" title="${isPaid ? 'Mark Unpaid' : 'Mark Paid'}">
+              ${isPaid
+                ? `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+                : `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`
+              }
+            </button>
+            <button onclick="openBillMsgForBill(${b.id})" class="ml-1 w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 btn-press flex-shrink-0">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.18 19.79 19.79 0 01.13 2.2 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.45-.45a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+            </button>
+            <button onclick="confirmDeleteBill(${b.id})" class="ml-1 w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 btn-press flex-shrink-0">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const rdModal = document.getElementById('renterDetailModal');
+  rdModal.classList.remove('hidden');
+  rdModal.classList.add('modal-sheet-enter', 'modal-bg-enter');
+  setTimeout(() => rdModal.classList.remove('modal-sheet-enter', 'modal-bg-enter'), 350);
+}
+function closeRenterDetailModal(cb) {
+  const el = document.getElementById('renterDetailModal');
+  el.classList.add('modal-sheet-exit', 'modal-bg-exit');
+  setTimeout(() => {
+    el.classList.add('hidden');
+    el.classList.remove('modal-sheet-exit', 'modal-bg-exit');
+    viewingRenterId = null;
+    if (cb) cb();
+  }, 220);
+}
+
+// ==================== Move-Out Prompt ====================
+function promptMoveOut(rid) {
+  const r = allRenters.find(x => x.id === rid); if (!r) return;
+  document.getElementById('confirmTitle').textContent = 'Mark as Moved Out';
+  document.getElementById('confirmMsg').innerHTML =
+    `Set move-out date for <strong>${esc(r.name)}</strong>:<br><br>
+     <input type="date" id="moveOutInput" value="${todayStr()}"
+       class="w-full bg-surface-900 rounded-xl px-3 py-2 text-sm border border-white/10 outline-none focus:border-brand-500 transition-colors mt-1" style="color:inherit"/>`;
+  document.getElementById('confirmOkBtn').textContent = 'Confirm';
+  document.getElementById('confirmOkBtn').className = 'flex-1 rounded-xl bg-amber-500 py-2.5 text-sm font-semibold btn-press text-white';
+  document.getElementById('confirmOkBtn').onclick = async () => {
+    const d = document.getElementById('moveOutInput').value;
+    if (!d)              { showToast('⚠️ Pick a date', 'error'); return; }
+    if (d < r.moveInDate){ showToast('⚠️ Move-out must be after move-in', 'error'); return; }
+    await dbPut(S_RENTERS, {...r, moveOutDate: d});
+    allRenters = (await dbGetAll(S_RENTERS)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    closeConfirmModal(); closeRenterDetailModal(); renderRenters(); renderDashboard();
+    showToast('✅ ' + r.name + ' marked as moved out', 'success');
+  };
+  const cm = document.getElementById('confirmModal');
+  cm.classList.remove('hidden');
+  cm.classList.add('modal-pop-enter', 'modal-bg-enter');
+  setTimeout(() => cm.classList.remove('modal-pop-enter', 'modal-bg-enter'), 320);
+}
+
+function confirmDeleteBill(id) {
+  pendingDeleteId = id; pendingDeleteStore = S_BILLS;
+  _showConfirmDel('Delete Bill', 'Delete this bill record? This cannot be undone.', doDelete);
+}
+function confirmDeleteRenter(id) {
+  const r = allRenters.find(x => x.id === id); if (!r) return;
+  const bc = allBills.filter(b => b.renterId === id).length;
+  pendingDeleteId = id; pendingDeleteStore = S_RENTERS;
+  _showConfirmDel('Delete Renter',
+    `Delete "${esc(r.name)}"? Their ${bc} bill${bc !== 1 ? 's' : ''} will remain but be unlinked.`, doDelete);
+}
+function _showConfirmDel(title, msg, fn) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent   = msg;
+  const btn = document.getElementById('confirmOkBtn');
+  btn.textContent = 'Delete';
+  btn.className = 'flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-semibold btn-press text-white';
+  btn.onclick = fn;
+  const el = document.getElementById('confirmModal');
+  el.classList.remove('hidden');
+  el.classList.add('modal-pop-enter', 'modal-bg-enter');
+  setTimeout(() => el.classList.remove('modal-pop-enter', 'modal-bg-enter'), 320);
+}
+async function doDelete() {
+  if (pendingDeleteId === null) return;
+  await dbDelete(pendingDeleteStore, pendingDeleteId);
+  closeConfirmModal();
+  if (pendingDeleteStore === S_BILLS) {
+    allBills = (await dbGetAll(S_BILLS)).sort((a, b) => new Date(b.date) - new Date(a.date));
+    renderHistory(); renderDashboard();
+    if (viewingRenterId) {
+      const rd = document.getElementById('renterDetailModal');
+      if (!rd.classList.contains('hidden')) openRenterDetail(viewingRenterId);
+    }
+    showToast('Deleted', 'info');
+  } else {
+    allRenters = (await dbGetAll(S_RENTERS)).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    renderRenters(); renderDashboard(); closeRenterDetailModal();
+    showToast('Renter deleted', 'info');
+  }
+  flashSyncDot();
+}
+function confirmClearAll() {
+  document.getElementById('confirmTitle').textContent = 'Clear All Data';
+  document.getElementById('confirmMsg').textContent   = 'Permanently delete ALL bills, renters, and photos? This cannot be undone!';
+  const btn = document.getElementById('confirmOkBtn');
+  btn.textContent = 'Clear All';
+  btn.className = 'flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-semibold btn-press text-white';
+  btn.onclick = async () => {
+    await dbClear(S_BILLS); await dbClear(S_RENTERS);
+    allBills = []; allRenters = [];
+    renderDashboard(); renderHistory(); renderRenters();
+    document.getElementById('totalBillsInfo').textContent   = '0';
+    document.getElementById('totalRentersInfo').textContent = '0';
+    closeConfirmModal();
+    showToast('All data cleared', 'info');
+  };
+  const el = document.getElementById('confirmModal');
+  el.classList.remove('hidden');
+  el.classList.add('modal-pop-enter', 'modal-bg-enter');
+  setTimeout(() => el.classList.remove('modal-pop-enter', 'modal-bg-enter'), 320);
+}
+function closeConfirmModal() {
+  const el = document.getElementById('confirmModal');
+  el.classList.add('modal-pop-exit', 'modal-bg-exit');
+  setTimeout(() => {
+    el.classList.add('hidden');
+    el.classList.remove('modal-pop-exit', 'modal-bg-exit');
+    const btn = document.getElementById('confirmOkBtn');
+    btn.textContent = 'Delete'; btn.onclick = doDelete;
+    btn.className = 'flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-semibold btn-press text-white';
+    document.getElementById('confirmMsg').innerHTML = '';
+    pendingDeleteId = null; pendingDeleteStore = null;
+  }, 210);
+}
+
+// ==================== Photo Modal ====================
+function openPhotoModal(id) {
+  const b = allBills.find(x => x.id == id);
+  if (!b || !b.photo) return;
+  document.getElementById('modalPhoto').src = b.photo;
+  document.getElementById('photoModal').classList.remove('hidden');
+}
+function closePhotoModal() { document.getElementById('photoModal').classList.add('hidden'); }
+
+// ==================== Settings ====================
+function savePricePerUnit() {
+  const v = parseFloat(document.getElementById('pricePerUnit').value);
+  if (isNaN(v) || v <= 0) { showToast('⚠️ Enter a valid price', 'error'); return; }
+  ss('rate', v.toString());
+  document.getElementById('currentRate').textContent = '₹' + v.toFixed(2) + '/unit';
+  updateLiveCalc();
+  renderDashboard();
+  showToast('✅ Rate saved: ₹' + v.toFixed(2) + '/unit', 'success');
+}
+function saveGroqKey() {
+  const k = document.getElementById('groqApiKey').value.trim();
+  if (!k || !k.startsWith('gsk_')) { showToast('⚠️ Invalid Groq key — should start with gsk_', 'error'); return; }
+  ss('groqKey', k);
+  document.getElementById('apiKeyWarning').style.display = 'none';
+  document.getElementById('aiStatusDot').className = 'w-2 h-2 rounded-full bg-green-400';
+  document.getElementById('aiStatusLabel').textContent = 'Ready';
+  document.getElementById('aiStatusLabel').className = 'text-xs text-green-400';
+  showToast('✅ Groq API key saved!', 'success');
+}
+function toggleApiKeyVisibility() {
+  const i = document.getElementById('groqApiKey');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+// ==================== Export ====================
+async function exportData() {
+  const [bills, renters] = await Promise.all([dbGetAll(S_BILLS), dbGetAll(S_RENTERS)]);
+  const obj = {
+    exported: new Date().toISOString(), appVersion: '6.0',
+    settings: {ratePerUnit: gs('rate', ''), msgLang: gs('msgLang', 'both')},
+    renters,
+    bills: bills.map(b => ({
+      ...b,
+      photo: b.photo ? '[photo_base64_omitted_in_export]' : null,
+      pumpBill: b.pumpBill || 0
+    }))
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 2)], {type: 'application/json'}));
+  const a = Object.assign(document.createElement('a'), {href: url, download: 'BijliTracker_backup_' + todayStr() + '.json'});
+  a.click(); URL.revokeObjectURL(url);
+  showToast('📥 Data exported!', 'success');
+}
+
+// ==================== Import ====================
+function openImportModal() {
+  document.getElementById('importModal').classList.remove('hidden');
+  document.getElementById('importStatus').classList.add('hidden');
+  document.getElementById('importFileInput').value = '';
+}
+function closeImportModal() {
+  document.getElementById('importModal').classList.add('hidden');
+}
+async function processImportFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const statusEl = document.getElementById('importStatus');
+  statusEl.textContent = 'Reading file…';
+  statusEl.classList.remove('hidden');
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data.renters || !data.bills) { statusEl.textContent = '⚠️ Invalid backup file format.'; return; }
+    let rentersAdded = 0, billsAdded = 0;
+    // Import renters first (without IDs — let IndexedDB assign new ones), build ID map
+    const idMap = {}; // old id → new id
+    for (const r of data.renters) {
+      const oldId = r.id;
+      const { id: _id, ...rData } = r;
+      const newId = await dbAdd(S_RENTERS, {...rData, createdAt: rData.createdAt || Date.now()});
+      idMap[oldId] = newId;
+      rentersAdded++;
+    }
+    // Import bills with remapped renterId
+    for (const b of data.bills) {
+      const { id: _id, photo: _ph, ...bData } = b;
+      const newRenterId = b.renterId ? (idMap[b.renterId] || null) : null;
+      await dbAdd(S_BILLS, {
+        ...bData,
+        renterId: newRenterId,
+        photo: null,
+        pumpBill: bData.pumpBill || 0,
+        elecAmount: bData.elecAmount != null ? bData.elecAmount : (bData.amount - (bData.pumpBill || 0)),
+        createdAt: bData.createdAt || Date.now()
+      });
+      billsAdded++;
+    }
+    // Reload
+    const [bills, renters] = await Promise.all([dbGetAll(S_BILLS), dbGetAll(S_RENTERS)]);
+    allBills   = bills.sort((a, b) => new Date(b.date) - new Date(a.date));
+    allRenters = renters.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    renderDashboard(); renderHistory(); renderRenters();
+    statusEl.textContent = `✅ Imported ${rentersAdded} renters and ${billsAdded} bills successfully! Note: Photos are not included in exports.`;
+    statusEl.style.color = '#4ade80';
+    flashSyncDot();
+  } catch(err) {
+    statusEl.textContent = '⚠️ Error reading file: ' + err.message;
+    statusEl.style.color = '#f87171';
+  }
+}
+
+// ==================== AI Chat ====================
+async function sendChat(overrideMsg) {
+  const input = document.getElementById('chatInput');
+  const msg   = overrideMsg || input.value.trim();
+  if (!msg) return;
+  const key = gs('groqKey');
+  if (!key) { showToast('⚠️ Add Groq API key in Settings first', 'warning'); switchTab('settings'); return; }
+
+  if (!overrideMsg) input.value = '';
+  appendChatMsg('user', msg);
+  chatHistory.push({role: 'user', content: msg});
+  if (chatHistory.length > 20) chatHistory = chatHistory.slice(-18); // cap history
+  const tid = appendTyping();
+
+  const unpaidBills = allBills.filter(b => !b.paid);
+  const unpaidTotal = unpaidBills.reduce((s, b) => s + b.amount, 0);
+  const totalElec   = allBills.reduce((s, b) => s + (b.elecAmount != null ? b.elecAmount : (b.amount - (b.pumpBill||0))), 0);
+  const avgUnits    = allBills.length ? (allBills.reduce((s, b) => s + b.units, 0) / allBills.length).toFixed(1) : 0;
+  const maxBill     = allBills.length ? allBills.reduce((a, b) => b.amount > a.amount ? b : a, allBills[0]) : null;
+
+  const billCtx = allBills.length
+    ? JSON.stringify(allBills.map(b => ({
+        id: b.id, date: b.date, prev: b.prev, curr: b.curr, units: b.units, rate: b.rate,
+        elecAmount: b.elecAmount != null ? b.elecAmount : (b.amount - (b.pumpBill||0)),
+        pumpBill: b.pumpBill||0, amount: b.amount, paid: !!b.paid,
+        notes: b.notes||'', renter: renterName(b.renterId) || 'No Renter'
+      })), null, 1)
+    : 'No bills recorded yet.';
+
+  const rCtx = allRenters.length
+    ? JSON.stringify(allRenters.map(r => {
+        const rb = allBills.filter(b => b.renterId === r.id);
+        const ru = rb.filter(b => !b.paid).reduce((s, b) => s + b.amount, 0);
+        return {
+          name: r.name, mobile: r.mobile||'', room: r.room||'',
+          moveIn: r.moveInDate, moveOut: r.moveOutDate||'Present',
+          status: r.moveOutDate ? 'past' : 'active',
+          totalBills: rb.length,
+          totalBilled: rb.reduce((s, b) => s + b.amount, 0).toFixed(2),
+          totalPaid: rb.filter(b => b.paid).reduce((s, b) => s + b.amount, 0).toFixed(2),
+          unpaidAmount: ru.toFixed(2),
+          unpaidBillCount: rb.filter(b => !b.paid).length,
+          avgUnits: rb.length ? (rb.reduce((s, b) => s + b.units, 0) / rb.length).toFixed(1) : 0
+        };
+      }), null, 1)
+    : 'No renters added yet.';
+
+  const sys = `You are BijliTracker AI — an expert electricity bill analyst and property management assistant for people/person who gives house/room for rent in India.
+
+STRICT RULES (MUST FOLLOW):
+- NEVER use "Namaste", "Jai", "Ram", "Shri", "Hare", or any religious/devotional greetings or words
+- NEVER use cultural words like "ji" as suffix, or any Hindu/Sikh/religious terminology
+- Use plain, professional, neutral language at all times
+- Use ₹ for all currency. Format monetary values clearly (e.g. ₹1,250.00)
+- Be thorough and well-structured. Use **bold** for key values and totals
+- If data is missing or no bills recorded, say so clearly
+- Respond in clean, professional English
+
+YOUR CAPABILITIES:
+- Full analysis of bills by date, renter, or time period
+- Pending dues breakdown — who owes what and for how many bills
+- Payment trend analysis — month-by-month consumption and billing
+- Renter comparison — side by side stats
+- Anomaly detection — unusual spikes in consumption
+- Actionable recommendations — who to follow up with first
+
+DATA SNAPSHOT:
+- Rate: ₹${gs('rate','not set')}/kWh | Average units per bill: ${avgUnits} kWh
+- Total bills: ${allBills.length} | Total renters: ${allRenters.length}
+- Unpaid bills: ${unpaidBills.length} | Total pending amount: ₹${unpaidTotal.toFixed(2)}
+- Total electricity billed (all time): ₹${totalElec.toFixed(2)}${maxBill ? `\n- Highest single bill: ₹${maxBill.amount.toFixed(2)} on ${maxBill.date} (${renterName(maxBill.renterId)||'No Renter'})` : ''}
+
+ALL BILLS (newest first):
+${billCtx}
+
+ALL RENTERS:
+${rCtx}`;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 1500,
+        temperature: 0.35,
+        messages: [{role: 'system', content: sys}, ...chatHistory.slice(-14)]
+      })
+    });
+    removeTyping(tid);
+    if (!res.ok) {
+      const e = (await res.json().catch(() => ({}))).error?.message || `Error ${res.status}`;
+      if (res.status === 401) { appendChatMsg('ai', '⚠️ Invalid API key. Please check your Groq key in Settings.'); }
+      else { appendChatMsg('ai', '⚠️ Groq Error: ' + e); }
+      chatHistory.pop(); return;
+    }
+    const data  = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'No response received.';
+    chatHistory.push({role: 'assistant', content: reply});
+    appendChatMsg('ai', reply);
+  } catch(err) {
+    removeTyping(tid);
+    appendChatMsg('ai', '⚠️ Network error. Check your internet connection and try again.');
+    chatHistory.pop();
+  }
+}
+function quickChat(msg) { sendChat(msg); }
+function appendChatMsg(role, text) {
+  const c = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  const formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,.08);padding:1px 4px;border-radius:4px;font-family:monospace">$1</code>')
+    .replace(/\n/g, '<br>');
+  div.innerHTML = formatted;
+  if (role === 'user') {
+    div.className = 'bg-brand-600 self-end max-w-xs px-4 py-2.5 text-sm leading-relaxed ml-auto';
+    div.style.cssText = 'word-break:break-word;border-radius:18px 4px 18px 18px;align-self:flex-end';
+  } else {
+    div.className = 'bg-surface-800 border border-white/8 self-start max-w-xs px-4 py-3 text-sm leading-relaxed';
+    div.style.cssText = 'word-break:break-word;border-radius:4px 18px 18px 18px';
+  }
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+}
+function appendTyping() {
+  const id = `typing_${Date.now()}`;
+  const c = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.id = id;
+  div.className = 'bg-surface-800 border border-white/8 max-w-xs px-4 py-3 text-sm';
+  div.style.borderRadius = '4px 18px 18px 18px';
+  div.innerHTML = '<span class="typing flex gap-1.5"><span class="w-2 h-2 bg-white/30 rounded-full inline-block"></span><span class="w-2 h-2 bg-white/30 rounded-full inline-block"></span><span class="w-2 h-2 bg-white/30 rounded-full inline-block"></span></span>';
+  c.appendChild(div); c.scrollTop = c.scrollHeight;
+  return id;
+}
+function removeTyping(id) { const e = document.getElementById(id); if (e) e.remove(); }
+
+// ==================== Toast (with types) ====================
+let _tt;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  const inner = document.getElementById('toastInner');
+  document.getElementById('toastMsg').textContent = msg;
+  // Style by type
+  const styles = {
+    success: 'bg-surface-800/95 border-green-500/30 text-white',
+    error:   'bg-red-900/80 border-red-500/50 text-white',
+    warning: 'bg-amber-900/70 border-amber-500/40 text-white',
+    info:    'bg-surface-800/95 border-white/15 text-white'
+  };
+  inner.className = 'glass border rounded-2xl px-5 py-3 text-sm font-semibold shadow-xl flex items-center gap-2 ' + (styles[type] || styles.info);
+  t.classList.remove('hidden');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.add('hidden'), 2800);
+}
+
+// ==================== Tutorial ====================
+const TUTORIAL_STEPS = [
+  {
+    icon: '⚡',
+    title: 'Welcome to BijliTracker Pro',
+    titleGu: 'BijliTracker Pro — શરૂ કરો',
+    body: `BijliTracker Pro helps you track, manage, and send electricity bills for your rented rooms — all stored privately on your device. No cloud, no account needed.
+
+<div class="rounded-xl bg-brand-500/10 border border-brand-500/20 px-3 py-2.5 mt-3 text-xs text-brand-300 leading-relaxed">⚡ <strong>What's new in Pro v6:</strong> Auto-fill previous reading, renter search, monthly trend chart, import/export data, sort & filter history, improved AI assistant, and a completely redesigned interface.</div>
+
+<strong>Tap Next to begin →</strong>`
+  },
+  {
+    icon: '⚙️',
+    title: 'Step 1: Set Your Electricity Rate',
+    titleGu: 'પ્રથમ: વીજળી દર નક્કી કરો',
+    body: `Go to <strong>Settings → Price Per Unit</strong> and enter the rate your electricity provider charges per kWh (e.g. ₹6.50).
+
+This rate is used for all automatic bill calculations. Without it, bills cannot be saved.
+
+<div class="rounded-xl bg-brand-500/10 border border-brand-500/20 px-3 py-2.5 mt-3 text-xs text-brand-300">💡 Find the per-unit rate on your main electricity bill — shown as ₹/kWh or ₹/Unit. You can update it anytime if your provider changes the tariff.</div>`
+  },
+  {
+    icon: '👤',
+    title: 'Step 2: Add Your Renters',
+    titleGu: 'બીજું: ભાડૂઆત ઉમેરો',
+    body: `Go to the <strong>Renters tab</strong> and tap <strong>"Add Renter"</strong>.
+
+Fill in:
+• <strong>Full Name</strong> — required
+• <strong>Mobile Number</strong> — used for WhatsApp billing
+• <strong>Move-in Date</strong> — required
+• <strong>Room / Unit</strong> — e.g. "Room 1, Ground Floor"
+• <strong>Notes</strong> — e.g. "Security deposit ₹5,000 received"
+
+Each renter has their own complete bill history, payment status, and running totals. When they leave, tap <strong>Move Out</strong> to archive them — their data stays safe.`
+  },
+  {
+    icon: '🧾',
+    title: 'Step 3: Add Bills',
+    titleGu: 'ત્રીજું: બિલ ઉમેરો',
+    body: `On the <strong>Home tab</strong>, fill in the <strong>Add New Bill</strong> form:
+
+• <strong>Select Renter</strong> — previous reading <strong>auto-fills</strong> from their last bill
+• <strong>Previous & Current Reading</strong> — units are calculated automatically
+• <strong>Billing Date</strong> — defaults to today
+• <strong>Notes</strong> — optional month notes
+
+📸 Attach a photo of the meter reading for your records.
+
+🔵 <strong>Water Pump Bill:</strong> Enter any additional pump charge. It's added to the total but tracked separately.`
+  },
+  {
+    icon: '📨',
+    title: 'Step 4: Send Bill Messages',
+    titleGu: 'ચોથું: ભાડૂઆતને બિલ મોકલો',
+    body: `Open a renter's profile and tap <strong>"Send Bill"</strong>, or tap the phone icon on any bill in History.
+
+The message includes:
+• Exact meter readings and units consumed
+• Rate per unit and electricity cost
+• Water pump charge (if added)
+• This bill's total amount
+• <strong>Full breakdown of all unpaid bills</strong> if there are dues
+• <strong>Grand total due — prominently displayed</strong>
+
+Tap <strong>Copy</strong> to copy the message, or <strong>WhatsApp</strong> to open WhatsApp directly with the renter's number pre-filled.
+
+<div class="rounded-xl bg-green-500/10 border border-green-500/20 px-3 py-2.5 mt-3 text-xs text-green-300">✅ Nothing is sent automatically — you always review before sending.</div>`
+  },
+  {
+    icon: '📊',
+    title: 'Step 5: Track History & Payments',
+    titleGu: 'પાંચમું: ઇતિહાસ અને ચૂકવણી',
+    body: `The <strong>History tab</strong> shows all bills with powerful filters:
+• Filter by renter, search by any keyword
+• Sort by date or amount
+• Filter by payment status (paid/unpaid)
+• Mark any bill as <strong>Paid ✓</strong> with one tap
+
+The <strong>Dashboard</strong> shows:
+• Latest bill hero card with amount and units
+• Quick stats: pending dues, this month collected, active renters, average bill
+• 6-month trend chart of your billing history
+
+<div class="rounded-xl bg-brand-500/10 border border-brand-500/20 px-3 py-2.5 mt-3 text-xs text-brand-300">📌 Use the green ✓ button on bills to quickly mark payments — updates everywhere instantly.</div>`
+  },
+  {
+    icon: '✦',
+    title: 'Step 6: Groq AI Assistant',
+    titleGu: 'છઠ્ઠું: AI સહાયક',
+    body: `The <strong>AI tab</strong> gives you a powerful assistant powered by Groq LLaMA 3.3 — completely free and very fast.
+
+It has full access to all your bills and renters and can:
+• Summarize all pending dues across all renters
+• Find the highest/lowest bill or month
+• Calculate averages and compare renters
+• Detect unusual consumption spikes
+• Give a complete payment status report
+
+Try asking:
+<span class="text-brand-400">• "Who has pending dues right now?"</span>
+<span class="text-brand-400">• "Give me a complete summary of all bills"</span>
+<span class="text-brand-400">• "Which renter uses the most electricity?"</span>
+
+<div class="rounded-xl bg-purple-500/10 border border-purple-500/20 px-3 py-2.5 mt-3 text-xs text-purple-300">🔑 Get your free Groq key at <strong>console.groq.com</strong> — no credit card, takes 1 minute. Add it in <strong>Settings → Groq API Key</strong>.</div>`
+  },
+  {
+    icon: '✅',
+    title: 'All Set — Ready to Go!',
+    titleGu: 'તૈયાર — શરૂ કરો!',
+    body: `You now know everything to use BijliTracker Pro efficiently.
+
+<strong>Quick checklist:</strong>
+1. ⚙️ Set electricity rate in Settings
+2. 👤 Add your renters with contact details
+3. 🧾 Record bills — previous reading auto-fills
+4. 💧 Add pump bill if applicable
+5. 📨 Send formatted bill messages via WhatsApp
+6. ✦ Ask AI for insights and payment summaries
+7. 📤 Export data anytime as a JSON backup
+8. 📥 Import backup if you switch devices
+
+<div class="rounded-xl bg-brand-500/10 border border-brand-500/20 px-3 py-2.5 mt-3 text-xs text-brand-300">📌 This tutorial is always available under <strong>Settings → App Tutorial</strong>.</div>`
+  }
+];
+let tutStep = 0;
+function openTutorial() {
+  tutStep = 0; renderTutStep();
+  const el = document.getElementById('tutorialModal');
+  el.classList.remove('hidden');
+  el.classList.add('modal-sheet-enter', 'modal-bg-enter');
+  setTimeout(() => el.classList.remove('modal-sheet-enter', 'modal-bg-enter'), 360);
+}
+function closeTutorial() {
+  const el = document.getElementById('tutorialModal');
+  el.classList.add('modal-sheet-exit', 'modal-bg-exit');
+  setTimeout(() => { el.classList.add('hidden'); el.classList.remove('modal-sheet-exit', 'modal-bg-exit'); }, 230);
+}
+function tutNext() { if (tutStep < TUTORIAL_STEPS.length - 1) { tutStep++; renderTutStep(); } }
+function tutPrev() { if (tutStep > 0) { tutStep--; renderTutStep(); } }
+function renderTutStep() {
+  const s = TUTORIAL_STEPS[tutStep];
+  const total = TUTORIAL_STEPS.length;
+  let dots = '';
+  for (let i = 0; i < total; i++) {
+    dots += `<div onclick="tutStep=${i};renderTutStep()" class="rounded-full cursor-pointer transition-all ${i === tutStep ? 'w-6 h-2 bg-brand-400' : 'w-2 h-2 bg-white/20 hover:bg-white/40'}"></div>`;
+  }
+  document.getElementById('tutStepDots').innerHTML = dots;
+  document.getElementById('tutContent').innerHTML = `
+    <div class="text-center text-4xl mb-3">${s.icon}</div>
+    <p class="text-xs text-brand-400 font-bold uppercase tracking-widest text-center mb-1">${s.titleGu}</p>
+    <h2 class="text-lg font-bold text-center mb-4">${s.title}</h2>
+    <div class="text-sm text-white/70 leading-relaxed space-y-2">${s.body.replace(/\n/g, '<br>')}</div>
+    <p class="text-xs text-white/25 text-center mt-6">Step ${tutStep + 1} of ${total}</p>
+  `;
+  document.getElementById('tutPrevBtn').classList.toggle('hidden', tutStep === 0);
+  document.getElementById('tutNextBtn').classList.toggle('hidden', tutStep === total - 1);
+  document.getElementById('tutDoneBtn').classList.toggle('hidden', tutStep !== total - 1);
+}
+
+// ==================== Bill Message ====================
+let _msgBillId = null;
+let _msgRenterId = null;
+let _msgTab = 'both';
+
+function setMsgLang(lang) {
+  ss('msgLang', lang);
+  _applyLangBtns(lang);
+  const labels = {both: 'Both languages', en: 'English only', gu: 'ગુજરાતી only'};
+  document.getElementById('currentLang').textContent = labels[lang] || 'Both languages';
+}
+function _applyLangBtns(lang) {
+  ['both','en','gu'].forEach(l => {
+    const btn = document.getElementById('lang' + l.charAt(0).toUpperCase() + l.slice(1));
+    if (!btn) return;
+    const active = l === lang;
+    btn.className = `rounded-xl py-2.5 text-xs font-bold btn-press transition-all border ${active ? 'bg-brand-500 text-white border-brand-500' : 'bg-white/5 text-white/60 border-white/10'}`;
+  });
+}
+function switchMsgTab(tab) {
+  _msgTab = tab;
+  ['both','en','gu'].forEach(t => {
+    const btn = document.getElementById('msgTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (!btn) return;
+    const active = t === tab;
+    btn.className = `flex-1 rounded-xl py-2 text-xs font-bold btn-press transition-all ${active ? 'bg-brand-500 text-white' : 'bg-white/5 text-white/50'}`;
+  });
+  document.getElementById('msgSectionEn').style.display = (tab === 'both' || tab === 'en') ? 'block' : 'none';
+  document.getElementById('msgSectionGu').style.display = (tab === 'both' || tab === 'gu') ? 'block' : 'none';
+}
+
+function _buildEnMsg(b, rName, dueAmt, unpaidBills) {
+  const elecAmt = b.elecAmount != null ? b.elecAmount : (b.amount - (b.pumpBill||0));
+  const pump    = b.pumpBill || 0;
+  const isPaid  = !!b.paid;
+  const monthName = new Date(b.date + 'T00:00:00').toLocaleDateString('en-IN', {month:'long', year:'numeric'});
+
+  let pendingSection = '';
+  if (unpaidBills && unpaidBills.length > 0) {
+    if (unpaidBills.length === 1 && !isPaid) {
+      pendingSection = `\n⚠️  AMOUNT DUE    : ₹${dueAmt.toFixed(2)}`;
+    } else if (isPaid && unpaidBills.length === 0) {
+      pendingSection = `\n✅ BALANCE DUE    : ₹0.00  (All bills cleared)`;
+    } else {
+      pendingSection = `\n\n📋 PENDING BILLS BREAKDOWN:\n`;
+      unpaidBills.forEach((ub, i) => {
+        const marker = ub.id === b.id ? ' ← this bill' : '';
+        pendingSection += `   ${i+1}. ${fmtDate(ub.date).padEnd(16)} ₹${ub.amount.toFixed(2)}${marker}\n`;
+      });
+      pendingSection += `   ${'─'.repeat(30)}\n`;
+      pendingSection += `   ${unpaidBills.length} unpaid bill${unpaidBills.length!==1?'s':''}`;
+    }
+  } else {
+    pendingSection = `\n✅ BALANCE DUE    : ₹0.00  (All bills cleared)`;
+  }
+
+  const paidLine     = isPaid ? `\n🟢 This Bill      : PAID` : '';
+  const dueHighlight = dueAmt > 0
+    ? `\n\n💳 TOTAL AMOUNT DUE: ₹${dueAmt.toFixed(2)}\n   Kindly pay the full amount at your earliest convenience.`
+    : `\n\n✅ No pending dues — all cleared. Thank you.`;
+
+  return `📄 ELECTRICITY BILL — ${monthName.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━
+👤 Renter    : ${rName}
+📅 Bill Date : ${fmtDate(b.date)}
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔢 METER READINGS:
+   Previous Reading  : ${b.prev} kWh
+   Current Reading   : ${b.curr} kWh
+   ──────────────────────────
+   Units Consumed    : ${b.units} kWh
+
+💰 BILL CALCULATION:
+   Rate per Unit     : ₹${b.rate.toFixed(2)}/kWh
+   Electricity Cost  : ₹${elecAmt.toFixed(2)}${pump > 0 ? `\n   Water Pump Bill  : ₹${pump.toFixed(2)}` : ''}
+   ──────────────────────────
+   🧾 THIS BILL TOTAL: ₹${b.amount.toFixed(2)}${paidLine}${pendingSection}${dueHighlight}
+━━━━━━━━━━━━━━━━━━━━━━━━${b.notes ? `\n📝 Note: ${b.notes}\n━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
+Please make the payment promptly.
+Thank you.`;
+}
+
+function _buildGuMsg(b, rName, dueAmt, unpaidBills) {
+  const elecAmt = b.elecAmount != null ? b.elecAmount : (b.amount - (b.pumpBill||0));
+  const pump    = b.pumpBill || 0;
+  const isPaid  = !!b.paid;
+  const monthName = new Date(b.date + 'T00:00:00').toLocaleDateString('gu-IN', {month:'long', year:'numeric'});
+
+  let pendingSection = '';
+  if (unpaidBills && unpaidBills.length > 0) {
+    if (unpaidBills.length === 1 && !isPaid) {
+      pendingSection = `\n⚠️  ચૂકવવાની રકમ : ₹${dueAmt.toFixed(2)}`;
+    } else if (isPaid && unpaidBills.length === 0) {
+      pendingSection = `\n✅ બાકી રકમ      : ₹0.00  (બધાં બિલ ચૂકવાઈ ગયા)`;
+    } else {
+      pendingSection = `\n\n📋 બાકી બિલ વિગત:\n`;
+      unpaidBills.forEach((ub, i) => {
+        const marker = ub.id === b.id ? ' ← આ બિલ' : '';
+        pendingSection += `   ${i+1}. ${fmtDate(ub.date).padEnd(16)} ₹${ub.amount.toFixed(2)}${marker}\n`;
+      });
+      pendingSection += `   ${'─'.repeat(30)}\n`;
+      pendingSection += `   કુલ ${unpaidBills.length} બાકી બિલ`;
+    }
+  } else {
+    pendingSection = `\n✅ બાકી રકમ      : ₹0.00  (બધાં બિલ ચૂકવાઈ ગયા)`;
+  }
+
+  const paidLine     = isPaid ? `\n🟢 આ બિલ         : ચૂકવાઈ ગયું` : '';
+  const dueHighlight = dueAmt > 0
+    ? `\n\n💳 કુલ ચૂકવવાની રકમ: ₹${dueAmt.toFixed(2)}\n   કૃપા કરી વહેલી તકે ચૂકવો.`
+    : `\n\n✅ કોઈ બાકી નથી — બધું ચૂકવાઈ ગયું.`;
+
+  return `📄 વીજળી બિલ — ${monthName.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━
+👤 ભાડૂઆત    : ${rName}
+📅 બિલ તારીખ : ${fmtDate(b.date)}
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔢 મીટર રીડિંગ:
+   અગાઉ રીડિંગ       : ${b.prev} kWh
+   હવે રીડિંગ        : ${b.curr} kWh
+   ──────────────────────────
+   વીજ વપરાશ         : ${b.units} kWh
+
+💰 બિલ ગણતરી:
+   પ્રતિ યુનિટ દર    : ₹${b.rate.toFixed(2)}/kWh
+   વીજળી ખર્ચ       : ₹${elecAmt.toFixed(2)}${pump > 0 ? `\n   પાણી પંપ બિલ    : ₹${pump.toFixed(2)}` : ''}
+   ──────────────────────────
+   🧾 આ બિલ કુલ     : ₹${b.amount.toFixed(2)}${paidLine}${pendingSection}${dueHighlight}
+━━━━━━━━━━━━━━━━━━━━━━━━${b.notes ? `\n📝 નોંધ: ${b.notes}\n━━━━━━━━━━━━━━━━━━━━━━━━` : ''}
+કૃપા કરી ચૂકવો — અગવડ ટાળવા સમયસર ભરો.
+આભાર.`;
+}
+
+function _getUnpaidBills(renterId) {
+  return allBills.filter(x => x.renterId === renterId && !x.paid).sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+function _calcDueAmt(renterId) {
+  return _getUnpaidBills(renterId).reduce((s, x) => s + x.amount, 0);
+}
+function _renderMsg() {
+  const b = allBills.find(x => x.id === _msgBillId); if (!b) return;
+  const r = allRenters.find(x => x.id === _msgRenterId);
+  const rName = r ? r.name : 'Renter';
+  const unpaidBills = _getUnpaidBills(_msgRenterId);
+  const dueAmt = unpaidBills.reduce((s, x) => s + x.amount, 0);
+  document.getElementById('msgPreviewEn').textContent = _buildEnMsg(b, rName, dueAmt, unpaidBills);
+  document.getElementById('msgPreviewGu').textContent = _buildGuMsg(b, rName, dueAmt, unpaidBills);
+  const savedLang = gs('msgLang', 'both');
+  switchMsgTab(savedLang);
+}
+function _getActiveMsgText() {
+  const b = allBills.find(x => x.id === _msgBillId); if (!b) return '';
+  const r = allRenters.find(x => x.id === _msgRenterId);
+  const rName = r ? r.name : 'Renter';
+  const unpaidBills = _getUnpaidBills(_msgRenterId);
+  const dueAmt = unpaidBills.reduce((s, x) => s + x.amount, 0);
+  if (_msgTab === 'en') return _buildEnMsg(b, rName, dueAmt, unpaidBills);
+  if (_msgTab === 'gu') return _buildGuMsg(b, rName, dueAmt, unpaidBills);
+  return _buildEnMsg(b, rName, dueAmt, unpaidBills) + '\n\n' + '─'.repeat(28) + '\n\n' + _buildGuMsg(b, rName, dueAmt, unpaidBills);
+}
+function openBillMsg(rid) {
+  const bills = allBills.filter(b => b.renterId === rid).sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (!bills.length) { showToast('⚠️ No bills found for this renter', 'warning'); return; }
+  _msgBillId = bills[0].id;
+  _msgRenterId = rid;
+  _renderMsg();
+  const el = document.getElementById('msgModal');
+  el.classList.remove('hidden');
+  el.classList.add('modal-sheet-enter', 'modal-bg-enter');
+  setTimeout(() => el.classList.remove('modal-sheet-enter', 'modal-bg-enter'), 360);
+}
+function openBillMsgForBill(billId) {
+  const b = allBills.find(x => x.id === billId); if (!b) return;
+  _msgBillId = billId;
+  _msgRenterId = b.renterId;
+  _renderMsg();
+  const el = document.getElementById('msgModal');
+  el.classList.remove('hidden');
+  el.classList.add('modal-sheet-enter', 'modal-bg-enter');
+  setTimeout(() => el.classList.remove('modal-sheet-enter', 'modal-bg-enter'), 360);
+}
+function closeMsgModal() {
+  const el = document.getElementById('msgModal');
+  el.classList.add('modal-sheet-exit', 'modal-bg-exit');
+  setTimeout(() => { el.classList.add('hidden'); el.classList.remove('modal-sheet-exit', 'modal-bg-exit'); }, 230);
+}
+function copyBillMsg() {
+  const text = _getActiveMsgText();
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('✅ Message copied!', 'success'); closeMsgModal();
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('✅ Message copied!', 'success'); closeMsgModal();
+  });
+}
+function whatsappBillMsg() {
+  const text = encodeURIComponent(_getActiveMsgText());
+  const r = allRenters.find(x => x.id === _msgRenterId);
+  const mobile = r && r.mobile ? r.mobile.replace(/\D/g, '') : '';
+  const url = mobile ? `https://wa.me/91${mobile}?text=${text}` : `https://wa.me/?text=${text}`;
+  window.open(url, '_blank');
+}
+
+// ==================== Nav Init ====================
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.nav-item').forEach(b => {
+      b.classList.remove('active', 'text-brand-400');
+      b.classList.add('text-white/40');
+    });
+    this.classList.add('active', 'text-brand-400');
+    this.classList.remove('text-white/40');
+  });
+});
+
+// ==================== Start ====================
+init().catch(console.error);
+</script>
+</body>
+</html>
