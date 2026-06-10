@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BijliTracker Connection Test</title>
+<style>
+  body{font-family:sans-serif;padding:20px;background:#0a0a0a;color:#fff;max-width:500px}
+  .box{background:#1a1a1a;border-radius:12px;padding:16px;margin:10px 0;font-size:14px}
+  .pass{border-left:4px solid #22c55e}
+  .fail{border-left:4px solid #ef4444}
+  .wait{border-left:4px solid #f59e0b}
+  h2{color:#22c55e}
+  button{background:#22c55e;color:#000;font-weight:bold;border:none;padding:14px 24px;border-radius:10px;font-size:16px;width:100%;margin-top:10px;cursor:pointer}
+</style>
+</head>
+<body>
+<h2>⚡ BijliTracker Test</h2>
+<div id="out"><div class="box wait">⏳ Tap Run Test below...</div></div>
+<button onclick="runTest()">Run Test</button>
+
+<script>
+const URL = 'https://mmnvbcztwjsdoyofjszx.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tbnZiY3p0d2pzZG95b2Zqc3p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5OTQzMTMsImV4cCI6MjA5NjU3MDMxM30.M00uDmruUApgLucVqnxyeYg08jmcjtHOAo8FEshv5k8';
+
+function show(msg, type){
+  document.getElementById('out').innerHTML +=
+    `<div class="box ${type}">${msg}</div>`;
+}
+
+async function runTest(){
+  document.getElementById('out').innerHTML = '';
+  show('🔄 Testing...','wait');
+
+  // Test 1: Basic reach
+  try{
+    const r = await fetch(`${URL}/rest/v1/`, {
+      headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}
+    });
+    show('✅ Supabase server reachable — Status '+r.status,'pass');
+  }catch(e){
+    show('❌ Cannot reach Supabase: '+e.message+'<br><br>👉 You are probably on file:// — host your app on Netlify','fail');
+    return;
+  }
+
+  // Test 2: Tenants table
+  try{
+    const r = await fetch(`${URL}/rest/v1/tenants?limit=1`, {
+      headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}
+    });
+    if(r.status===200) show('✅ tenants table found and accessible','pass');
+    else if(r.status===404) show('❌ tenants table NOT found — run the SQL setup','fail');
+    else if(r.status===401) show('❌ Wrong anon key','fail');
+    else show('⚠️ tenants returned status '+r.status,'wait');
+  }catch(e){
+    show('❌ Table test failed: '+e.message,'fail');
+  }
+
+  // Test 3: Bills table
+  try{
+    const r = await fetch(`${URL}/rest/v1/bills?limit=1`, {
+      headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}
+    });
+    if(r.status===200) show('✅ bills table found','pass');
+    else show('❌ bills table missing — run the SQL setup','fail');
+  }catch(e){
+    show('❌ bills test failed: '+e.message,'fail');
+  }
+
+  // Test 4: Auth service
+  try{
+    const r = await fetch(`${URL}/auth/v1/settings`, {
+      headers:{'apikey':KEY}
+    });
+    if(r.ok){
+      const d = await r.json();
+      show('✅ Auth service working','pass');
+      if(d.disable_signup) show('❌ Signups are DISABLED in Supabase — go to Auth → Providers → Email and enable it','fail');
+      else show('✅ Signups are enabled','pass');
+    }
+  }catch(e){
+    show('❌ Auth test failed: '+e.message,'fail');
+  }
+
+  show('🏁 Test complete','wait');
+}
+</script>
+</body>
+</html>
