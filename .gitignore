@@ -1,0 +1,14 @@
+# Environment variables — NEVER commit real keys
+.env
+.env.local
+.env*.local
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Vercel
+.vercel
